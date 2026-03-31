@@ -1,0 +1,38 @@
+{
+  "name": "Meri Kamai – Mind Training Games",
+  "short_name": "MeriKamai",
+  "description": "Dimaag ki training, games ke zariye. 5 skill-based mind games.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05050a",
+  "theme_color": "#ff6b00",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/assets/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/images/screenshot1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Meri Kamai Homepage"
+    }
+  ],
+  "categories": ["games", "education"],
+  "lang": "hi",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

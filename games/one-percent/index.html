@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#05050a"/>
+  <title>One Percent – Meri Kamai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/css/game-base.css"/>
+  <style>
+    .op-game-wrap {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      gap: 16px;
+    }
+    .op-track {
+      width: 100%;
+      max-width: 340px;
+      height: 80px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 40px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0,212,255,0.2);
+    }
+    .op-ball {
+      width: 36px; height: 36px;
+      background: radial-gradient(circle at 40% 35%, #fff, var(--cyan));
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      box-shadow: 0 0 20px var(--cyan), 0 0 40px rgba(0,212,255,0.3);
+      transition: none;
+    }
+    .op-wall-left, .op-wall-right {
+      position: absolute;
+      top: 0; bottom: 0;
+      background: #ff4444;
+      box-shadow: 0 0 15px rgba(255,68,68,0.6);
+    }
+    .op-wall-left { left: 0; }
+    .op-wall-right { right: 0; }
+    .op-gap-indicator {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 6px;
+      background: var(--green);
+      border-radius: 3px;
+      opacity: 0.6;
+    }
+    .op-score-big {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(60px, 16vw, 90px);
+      font-weight: 900;
+      color: var(--cyan);
+      text-shadow: 0 0 30px rgba(0,212,255,0.6);
+      line-height: 1;
+    }
+    .op-level-label {
+      font-family: 'Teko', sans-serif;
+      font-size: 18px;
+      color: var(--text2);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .op-gap-display {
+      font-size: 14px;
+      color: var(--text2);
+      letter-spacing: 1px;
+    }
+    .percent-bar {
+      width: 100%;
+      max-width: 340px;
+      height: 12px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .percent-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      border-radius: 6px;
+      transition: width 0.3s;
+    }
+    .lives-display {
+      display: flex;
+      gap: 8px;
+    }
+    .life-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 8px rgba(255,68,68,0.6);
+      transition: all 0.3s;
+    }
+    .life-dot.used {
+      background: rgba(255,255,255,0.1);
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-header">
+      <a href="/" class="back-btn">← Home</a>
+      <div class="game-title-wrap">
+        <span class="game-emoji">⚡</span>
+        <span class="game-name">One Percent</span>
+      </div>
+      <div class="header-score">
+        <span class="hs-label">Best</span>
+        <span class="hs-val" id="bestDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="si-label">Level</span>
+        <span class="si-val" id="levelDisplay">1</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Score</span>
+        <span class="si-val" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Lives</span>
+        <span class="si-val lives-display" id="livesDisplay">
+          <span class="life-dot"></span>
+          <span class="life-dot"></span>
+          <span class="life-dot"></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="game-area op-game-wrap" id="gameArea">
+      <!-- IDLE STATE -->
+      <div id="opIdle" style="text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px">
+        <div style="font-size:60px;filter:drop-shadow(0 0 20px #00d4ff)">⚡</div>
+        <div style="font-family:'Teko',sans-serif;font-size:32px;font-weight:700;color:var(--cyan)">99% FAIL HERE</div>
+        <div style="font-size:14px;color:var(--text2);text-align:center;line-height:1.6;max-width:280px">
+          Ball gap ke through pass karo.<br/>Gap choti hoti jayegi…<br/>Bas 1% log survive karte hain!
+        </div>
+        <div class="percent-bar" style="max-width:200px">
+          <div class="percent-fill" style="width:1%"></div>
+        </div>
+        <div style="font-size:12px;color:var(--cyan)">Only 1% reach Level 10</div>
+      </div>
+
+      <!-- PLAYING STATE -->
+      <div id="opPlaying" style="display:none;width:100%;display:none;flex-direction:column;align-items:center;gap:12px">
+        <div class="op-score-big" id="opScore">0</div>
+        <div class="op-level-label">LEVEL <span id="opLevel">1</span></div>
+
+        <div class="op-track" id="opTrack">
+          <div class="op-wall-left" id="wallLeft"></div>
+          <div class="op-wall-right" id="wallRight"></div>
+          <div class="op-gap-indicator" id="gapIndicator"></div>
+          <div class="op-ball" id="opBall"></div>
+        </div>
+
+        <div class="op-gap-display">Gap: <span id="gapSize">—</span>px | Ball: <span id="ballPos">—</span></div>
+        <div class="feedback-msg" id="opFeedback"></div>
+      </div>
+
+      <!-- RESULT STATE -->
+      <div id="opResult" style="display:none;flex-direction:column;align-items:center;gap:12px;text-align:center;width:100%">
+        <div style="font-size:50px" id="opResultEmoji">💀</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:48px;font-weight:900;color:var(--cyan)" id="opFinalScore">0</div>
+        <div style="font-family:'Teko',sans-serif;font-size:20px;font-weight:600" id="opResultTitle">FAILED</div>
+        <div style="font-size:14px;color:var(--text2)" id="opResultMsg"></div>
+        <div style="font-size:13px;color:var(--purple)" id="opCompare"></div>
+        <div class="result-card" style="padding:12px;max-width:280px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:6px">LEVEL REACHED</div>
+          <div style="font-family:'Teko',sans-serif;font-size:28px;color:var(--accent)" id="opLevelReached">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-area">
+      <div class="ctrl-state" id="idleCtrl">
+        <button class="btn-game-primary" id="opBtnStart">⚡ START</button>
+      </div>
+      <div class="ctrl-state hidden" id="playCtrl">
+        <button class="btn-game-stop" id="opBtnTap" style="background:linear-gradient(135deg,#00d4ff,#0088ff);box-shadow:0 0 30px rgba(0,212,255,0.5);animation:none">
+          🎯 TAP TO PASS!
+        </button>
+        <div class="ctrl-hint2">Ball ko gap ke beech se pass karo</div>
+      </div>
+      <div class="ctrl-state hidden" id="resultCtrl">
+        <button class="btn-game-primary" id="opBtnRetry">🔄 RETRY</button>
+        <button class="btn-game-secondary" id="opBtnHome">🏠 Home</button>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="ps-label">Progress to 1% Club</div>
+      <div class="ps-bar"><div class="ps-fill" id="opProgress" style="width:1%"></div></div>
+    </div>
+  </div>
+
+  <script src="/common/storage.js"></script>
+  <script>
+    const G = {
+      state: 'idle',
+      score: 0,
+      level: 1,
+      lives: 3,
+      best: 0,
+      gapWidth: 120,
+      gapPos: 0,
+      ballPos: 50,
+      ballDir: 1,
+      ballSpeed: 2.5,
+      animId: null,
+      trackWidth: 340,
+    };
+
+    const SFX = {
+      ctx: null,
+      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+      play(type) {
+        try {
+          this.init();
+          const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
+          o.connect(g); g.connect(this.ctx.destination);
+          if (type === 'pass') {
+            o.frequency.setValueAtTime(880, this.ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+            g.gain.setValueAtTime(0.12, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+          } else if (type === 'fail') {
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(300, this.ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.4);
+            g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+          } else if (type === 'levelup') {
+            [523, 659, 784, 1047, 1319].forEach((f, i) => {
+              const o2 = this.ctx.createOscillator(); const g2 = this.ctx.createGain();
+              o2.connect(g2); g2.connect(this.ctx.destination);
+              o2.frequency.value = f; g2.gain.setValueAtTime(0.08, this.ctx.currentTime + i*0.06);
+              g2.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i*0.06 + 0.15);
+              o2.start(this.ctx.currentTime + i*0.06); o2.stop(this.ctx.currentTime + i*0.06 + 0.15);
+            });
+          }
+          o.start(); o.stop(this.ctx.currentTime + 0.5);
+        } catch(e) {}
+      }
+    };
+
+    const $ = id => document.getElementById(id);
+
+    function initLevel() {
+      G.gapWidth = Math.max(30, 120 - G.level * 9);
+      G.ballSpeed = 1.5 + G.level * 0.35;
+      G.trackWidth = $('opTrack').offsetWidth || 340;
+      G.gapPos = Math.random() * (G.trackWidth - G.gapWidth - 20) + 10;
+      G.ballPos = (G.trackWidth / 2) - 18;
+      G.ballDir = Math.random() > 0.5 ? 1 : -1;
+      updateVisuals();
+      $('opLevel').textContent = G.level;
+      $('levelDisplay').textContent = G.level;
+      $('gapSize').textContent = Math.round(G.gapWidth);
+    }
+
+    function updateVisuals() {
+      const ball = $('opBall');
+      const wallL = $('wallLeft');
+      const wallR = $('wallRight');
+      const gap = $('gapIndicator');
+      if (!ball) return;
+
+      ball.style.left = G.ballPos + 'px';
+      wallL.style.width = G.gapPos + 'px';
+      const rightStart = G.gapPos + G.gapWidth;
+      wallR.style.left = rightStart + 'px';
+      wallR.style.width = (G.trackWidth - rightStart) + 'px';
+      gap.style.left = G.gapPos + 'px';
+      gap.style.width = G.gapWidth + 'px';
+      $('ballPos').textContent = Math.round(G.ballPos);
+      $('opScore').textContent = G.score;
+      $('scoreDisplay').textContent = G.score;
+    }
+
+    function gameLoop() {
+      if (G.state !== 'playing') return;
+      G.ballPos += G.ballDir * G.ballSpeed;
+      G.trackWidth = $('opTrack').offsetWidth || 340;
+      if (G.ballPos <= 0) { G.ballPos = 0; G.ballDir = 1; }
+      if (G.ballPos >= G.trackWidth - 36) { G.ballPos = G.trackWidth - 36; G.ballDir = -1; }
+      updateVisuals();
+      G.animId = requestAnimationFrame(gameLoop);
+    }
+
+    function setState(s) {
+      G.state = s;
+      $('opIdle').style.display = s === 'idle' ? 'flex' : 'none';
+      $('opPlaying').style.display = s === 'playing' ? 'flex' : 'none';
+      $('opResult').style.display = s === 'result' ? 'flex' : 'none';
+      $('idleCtrl').classList.toggle('hidden', s !== 'idle');
+      $('playCtrl').classList.toggle('hidden', s !== 'playing');
+      $('resultCtrl').classList.toggle('hidden', s !== 'result');
+    }
+
+    function startGame() {
+      SFX.init();
+      G.score = 0; G.level = 1; G.lives = 3;
+      updateLives();
+      $('opFeedback').textContent = '';
+      initLevel();
+      setState('playing');
+      G.animId = requestAnimationFrame(gameLoop);
+    }
+
+    function tapAction() {
+      if (G.state !== 'playing') return;
+      SFX.init();
+      const ballCenter = G.ballPos + 18;
+      const gapLeft = G.gapPos;
+      const gapRight = G.gapPos + G.gapWidth;
+      const isInGap = ballCenter > gapLeft + 2 && ballCenter < gapRight - 2;
+
+      if (isInGap) {
+        // SUCCESS
+        G.score++;
+        SFX.play('pass');
+        $('opFeedback').textContent = ['Perfect! 🎯', 'Nice! ⚡', 'Clean! 🔥', '1% move! 👑'][Math.floor(Math.random()*4)];
+        $('opFeedback').style.color = 'var(--green)';
+        $('opProgress').style.width = Math.min(100, G.score * 10) + '%';
+        $('opScore').style.color = '#00ff88';
+        setTimeout(() => { if($('opScore')) $('opScore').style.color = 'var(--cyan)'; }, 200);
+
+        if (G.score % 5 === 0) {
+          G.level++;
+          SFX.play('levelup');
+          $('opFeedback').textContent = `LEVEL ${G.level}! 🔥`;
+          setTimeout(() => initLevel(), 500);
+        } else {
+          initLevel();
+        }
+      } else {
+        // FAIL
+        G.lives--;
+        SFX.play('fail');
+        updateLives();
+        $('opFeedback').textContent = NearMiss ? NearMiss[Math.floor(Math.random()*NearMiss.length)] : 'Miss! Try again 😤';
+        $('opFeedback').style.color = 'var(--red)';
+        document.querySelector('.game-container').classList.add('flash-red');
+        setTimeout(() => document.querySelector('.game-container').classList.remove('flash-red'), 300);
+
+        if (G.lives <= 0) {
+          cancelAnimationFrame(G.animId);
+          setTimeout(() => showResult(), 400);
+        } else {
+          initLevel();
+        }
+      }
+    }
+
+    function updateLives() {
+      const dots = $('livesDisplay').querySelectorAll('.life-dot');
+      dots.forEach((d, i) => d.classList.toggle('used', i >= G.lives));
+    }
+
+    function showResult() {
+      setState('result');
+      const isNew = G.score > G.best;
+      if (isNew) G.best = G.score;
+      Storage.set('onepct', { best: G.best });
+
+      $('opFinalScore').textContent = G.score;
+      $('opLevelReached').textContent = 'Level ' + G.level;
+      $('bestDisplay').textContent = G.best;
+
+      if (G.score === 0) {
+        $('opResultEmoji').textContent = '💀';
+        $('opResultTitle').textContent = '99% WALI FEELING 😅';
+        $('opResultMsg').textContent = 'Beginner ki tarah start — par giving up mat karo!';
+      } else if (G.score < 5) {
+        $('opResultEmoji').textContent = '😤';
+        $('opResultTitle').textContent = 'NOT BAD!';
+        $('opResultMsg').textContent = 'Practice karo — 1% tak pahunchna hai!';
+      } else if (G.score < 10) {
+        $('opResultEmoji').textContent = '🔥';
+        $('opResultTitle').textContent = 'PRO LEVEL!';
+        $('opResultMsg').textContent = 'Sirf kuch aur — 1% Club ke door nahi!';
+      } else {
+        $('opResultEmoji').textContent = '👑';
+        $('opResultTitle').textContent = '1% CLUB! LEGEND!';
+        $('opResultMsg').textContent = 'Tum 99% logon se behtar ho!';
+      }
+      const pct = Math.min(99, Math.floor((G.score / 20) * 95) + 1);
+      $('opCompare').textContent = `You are better than ${pct}% players 😏`;
+    }
+
+    $('opBtnStart').addEventListener('click', startGame);
+    $('opBtnTap').addEventListener('click', tapAction);
+    $('opBtnRetry').addEventListener('click', () => {
+      if (window.shouldShowAd && shouldShowAd() && window.showAd) { showAd(startGame); return; }
+      startGame();
+    });
+    $('opBtnHome').addEventListener('click', () => window.location.href = '/');
+    document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); if (G.state === 'idle') startGame(); else if (G.state === 'playing') tapAction(); } });
+
+    const saved = Storage.get('onepct') || {};
+    G.best = saved.best || 0;
+    $('bestDisplay').textContent = G.best;
+    setState('idle');
+  </script>
+</body>
+</html>

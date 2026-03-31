@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#0a0a0f"/>
+  <meta name="description" content="Meri Kamai - Dimaag ki training, games ke zariye"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <link rel="apple-touch-icon" href="/assets/images/icon-192.png"/>
+  <title>Meri Kamai – Dimaag Ki Training</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Teko:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/css/home.css"/>
+</head>
+<body>
+  <!-- Particle canvas -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">MERI<span class="logo-accent">KAMAI</span></span>
+      </div>
+      <nav class="nav-links">
+        <a href="#games">Games</a>
+        <a href="#why">Why</a>
+        <a href="pages/about.html">About</a>
+      </nav>
+      <div class="header-actions">
+        <a href="#download" class="btn-app-small">📱 App</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-glow glow-1"></div>
+    <div class="hero-glow glow-2"></div>
+    <div class="hero-content">
+      <div class="hero-badge animate-in">🔥 INDIA KA #1 MIND TRAINING PLATFORM</div>
+      <h1 class="hero-title animate-in delay-1">
+        <span class="title-line">PLAY KARO.</span>
+        <span class="title-line accent-line">UPGRADE KARO.</span>
+        <span class="title-sub">Sirf timepass nahi — asli transformation</span>
+      </h1>
+      <p class="hero-desc animate-in delay-2">
+        Log paise ke peeche bhagte hain… par asli kamai wo hoti hai<br/>
+        jo aapko <strong>better</strong> banaye. Yahan har game aapke<br/>
+        <span class="highlight">dimaag ko train</span> karta hai.
+      </p>
+      <div class="hero-skills animate-in delay-3">
+        <div class="skill-chip">🧠 Better Decisions</div>
+        <div class="skill-chip">⚡ Sharper Focus</div>
+        <div class="skill-chip">💪 Strong Confidence</div>
+        <div class="skill-chip">🎯 Real Control</div>
+      </div>
+      <div class="hero-cta animate-in delay-4">
+        <a href="#games" class="btn-primary pulse-btn">
+          <span>Start Training</span>
+          <span class="btn-icon">🔥</span>
+        </a>
+        <a href="#download" class="btn-secondary">
+          <span>📱 Android App Download</span>
+        </a>
+      </div>
+      <div class="hero-stats animate-in delay-5">
+        <div class="stat"><span class="stat-num" id="live-players">400+</span><span class="stat-label">Live Players</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">5</span><span class="stat-label">Mind Games</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">1%</span><span class="stat-label">Club Members</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-game-preview">
+            <div class="preview-bar" id="previewBar"></div>
+            <div class="preview-mult" id="previewMult">1.0x</div>
+            <div class="preview-label">SkyRise 🚀</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- YOUTUBE VIDEO -->
+  <section class="video-section" id="video">
+    <div class="section-label">📹 DEKHO SAMJHO</div>
+    <h2 class="section-title">Ye Games Kya Hain Aur Kyun?</h2>
+    <p class="section-sub">2 minute me samjho — phir khelo</p>
+    <div class="video-wrapper">
+      <div class="video-frame">
+        <!-- Replace YOUR_VIDEO_ID with actual YouTube video ID -->
+        <iframe
+          src="https://www.youtube.com/embed/YOUR_VIDEO_ID?rel=0&modestbranding=1"
+          title="Meri Kamai - Games Explained"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <div class="video-cta">
+        <a href="https://youtube.com/@merikamai" target="_blank" class="btn-youtube">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          YouTube Channel Follow Karo
+        </a>
+        <a href="https://instagram.com/merikamai" target="_blank" class="btn-instagram">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          Instagram Follow Karo
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAMES -->
+  <section class="games-section" id="games">
+    <div class="section-label">🎮 CHOOSE YOUR BATTLE</div>
+    <h2 class="section-title">5 Games. 5 Real Skills.</h2>
+    <p class="section-sub">Har game aapko ek asli skill deta hai</p>
+
+    <div class="games-grid">
+
+      <div class="game-card featured" data-game="skyrise">
+        <div class="card-glow"></div>
+        <div class="card-badge">🔥 MOST POPULAR</div>
+        <div class="card-icon">🚀</div>
+        <div class="card-content">
+          <h3 class="card-title">SkyRise</h3>
+          <p class="card-tagline">Sahi time pe decision lo</p>
+          <div class="card-skill">
+            <span class="skill-icon">🧠</span>
+            <span>Decision Making</span>
+          </div>
+          <p class="card-desc">Rocket upar ja raha hai… risk lena hai ya rukna hai — ye aapka decision hai.</p>
+          <div class="card-stats">
+            <span>⭐ 4.9</span>
+            <span>👥 <span class="live-count">412</span> playing</span>
+          </div>
+          <a href="/games/skyrise/index.html" class="btn-play">Play Now ▶</a>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="one-percent">
+        <div class="card-glow"></div>
+        <div class="card-badge elite">👑 ELITE</div>
+        <div class="card-icon">⚡</div>
+        <div class="card-content">
+          <h3 class="card-title">One Percent</h3>
+          <p class="card-tagline">Kya tum 1% me ho?</p>
+          <div class="card-skill">
+            <span class="skill-icon">🎯</span>
+            <span>Focus + Patience</span>
+          </div>
+          <p class="card-desc">99% log fail hote hain. Sirf wahi jeetta hai jo give up nahi karta.</p>
+          <div class="card-stats">
+            <span>⭐ 4.8</span>
+            <span>👥 <span class="live-count">287</span> playing</span>
+          </div>
+          <a href="/games/one-percent/index.html" class="btn-play">Try Now ▶</a>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="survivor-x">
+        <div class="card-glow"></div>
+        <div class="card-icon">🛡</div>
+        <div class="card-content">
+          <h3 class="card-title">Survivor X</h3>
+          <p class="card-tagline">Kitni der tik paoge?</p>
+          <div class="card-skill">
+            <span class="skill-icon">💪</span>
+            <span>Stress Control</span>
+          </div>
+          <p class="card-desc">Obstacles aate rahenge. Tumhe bas survive karna hai. Hero wahi hai jo tikta hai.</p>
+          <div class="card-stats">
+            <span>⭐ 4.7</span>
+            <span>👥 <span class="live-count">198</span> playing</span>
+          </div>
+          <a href="/games/survivor-x/index.html" class="btn-play">Survive Now ▶</a>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="clutch-x">
+        <div class="card-glow"></div>
+        <div class="card-icon">⚡</div>
+        <div class="card-content">
+          <h3 class="card-title">Clutch X</h3>
+          <p class="card-tagline">Last second pe jeet</p>
+          <div class="card-skill">
+            <span class="skill-icon">🔥</span>
+            <span>Confidence</span>
+          </div>
+          <p class="card-desc">Ek second late… aur sab khatam. Ye hai real clutch moment.</p>
+          <div class="card-stats">
+            <span>⭐ 4.9</span>
+            <span>👥 <span class="live-count">334</span> playing</span>
+          </div>
+          <a href="/games/clutch-x/index.html" class="btn-play">Play Clutch ▶</a>
+        </div>
+      </div>
+
+      <div class="game-card" data-game="legend-run">
+        <div class="card-glow"></div>
+        <div class="card-badge legend">🏆 LEGEND</div>
+        <div class="card-icon">🏆</div>
+        <div class="card-content">
+          <h3 class="card-title">Legend Run</h3>
+          <p class="card-tagline">Legend bano ya quit karo</p>
+          <div class="card-skill">
+            <span class="skill-icon">⚡</span>
+            <span>Discipline</span>
+          </div>
+          <p class="card-desc">Easy nahi hai. Sirf strong log hi aage badhte hain. Har run aapko better banata hai.</p>
+          <div class="card-stats">
+            <span>⭐ 4.8</span>
+            <span>👥 <span class="live-count">156</span> playing</span>
+          </div>
+          <a href="/games/legend-run/index.html" class="btn-play">Start Run ▶</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WHY SECTION -->
+  <section class="why-section" id="why">
+    <div class="section-label">💡 THE DIFFERENCE</div>
+    <h2 class="section-title">Sirf Games Nahi — Transformation</h2>
+    <p class="section-sub">Aaj ke time me log games khelte hain par unse kuch seekhte nahi</p>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">🧠</div>
+        <h3>Focus Improve</h3>
+        <p>Har game aapki concentration badhata hai</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">⚡</div>
+        <h3>Better Decisions</h3>
+        <p>Pressure me sahi choice karna seekho</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">💪</div>
+        <h3>Mentally Strong</h3>
+        <p>Stress handle karna — real life me kaam aayega</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🚀</div>
+        <h3>Daily Growth</h3>
+        <p>Sirf 10 min roz — aur aap khud change feel karoge</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section class="leaderboard-section" id="leaderboard">
+    <div class="section-label">🏆 LIVE LEADERBOARD</div>
+    <h2 class="section-title">Top Players Today</h2>
+    <div class="leaderboard-wrap">
+      <div class="lb-header">
+        <span>Rank</span><span>Player</span><span>Score</span><span>Title</span>
+      </div>
+      <div class="lb-list" id="lbList"></div>
+    </div>
+  </section>
+
+  <!-- APP DOWNLOAD -->
+  <section class="download-section" id="download">
+    <div class="download-glow"></div>
+    <div class="download-content">
+      <div class="download-text">
+        <div class="section-label">📱 MOBILE APP</div>
+        <h2 class="section-title">Android App Download Karo</h2>
+        <p>Kabhi bhi, kahin bhi — apna dimaag train karo.<br/>Offline bhi kaam karta hai!</p>
+        <div class="download-features">
+          <div class="feat">✅ Offline Support</div>
+          <div class="feat">✅ Push Notifications</div>
+          <div class="feat">✅ Daily Challenges</div>
+          <div class="feat">✅ Score Sync</div>
+        </div>
+        <a href="#" class="btn-download" id="installBtn" onclick="handleInstall(event)">
+          <svg viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M17.523 15.341l-.005.007-4.96 2.862a1 1 0 0 1-1.001 0l-4.96-2.862-.005-.007A5 5 0 0 1 4 11V5a1 1 0 0 1 .553-.894l7-3.5a1 1 0 0 1 .894 0l7 3.5A1 1 0 0 1 20 5v6a5 5 0 0 1-2.477 4.341z"/></svg>
+          📥 Download Android App (APK)
+        </a>
+        <p class="install-note">Ya browser me open karo aur "Add to Home Screen" karo</p>
+      </div>
+      <div class="download-phone">
+        <div class="phone-mockup-2">
+          <div class="phone-notch"></div>
+          <div class="phone-screen-2">
+            <div class="app-preview-grid">
+              <div class="ap-game">🚀</div>
+              <div class="ap-game">⚡</div>
+              <div class="ap-game">🛡</div>
+              <div class="ap-game">🏆</div>
+            </div>
+            <div class="ap-label">MERI KAMAI</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-glow"></div>
+    <h2 class="cta-title">Abhi Start Karo 🚀</h2>
+    <p class="cta-sub">Sirf 10 minute roz — aur aap apne aap me change feel karoge</p>
+    <p class="cta-sub2">Strong mind = Strong life</p>
+    <a href="#games" class="btn-primary pulse-btn big-btn">
+      <span>Start Now</span><span class="btn-icon">🔥</span>
+    </a>
+    <div class="social-links">
+      <a href="https://youtube.com/@merikamai" target="_blank" class="social-link yt">
+        <svg viewBox="0 0 24 24" width="18"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        YouTube
+      </a>
+      <a href="https://instagram.com/merikamai" target="_blank" class="social-link ig">
+        <svg viewBox="0 0 24 24" width="18"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        Instagram
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo-text">MERI<span class="logo-accent">KAMAI</span></span>
+        <p>"Ye sirf games nahi, aapke dimaag ki training hai"</p>
+      </div>
+      <div class="footer-links">
+        <a href="/pages/about.html">About Us</a>
+        <a href="/pages/privacy.html">Privacy Policy</a>
+        <a href="/pages/terms.html">Terms & Conditions</a>
+        <a href="/pages/disclaimer.html">Disclaimer</a>
+        <a href="/pages/contact.html">Contact Us</a>
+      </div>
+    </div>
+    <div class="footer-note">
+      ⚠️ Note: Ye platform sirf skill-based games provide karta hai. Yahan koi real money gambling ya betting nahi hoti.
+    </div>
+    <div class="footer-copy">© 2026 Meri Kamai. All rights reserved. | support@merikamai.in</div>
+  </footer>
+
+  <!-- AD MODAL -->
+  <div class="ad-overlay" id="adOverlay">
+    <div class="ad-box">
+      <div class="ad-label">AD</div>
+      <div class="ad-content">
+        <!-- Google AdSense / AdMob ad goes here -->
+        <div class="ad-placeholder">
+          <p>Advertisement</p>
+          <p style="font-size:12px;opacity:0.5">Google AdSense</p>
+        </div>
+      </div>
+      <button class="ad-close" id="adClose">Skip Ad ▶</button>
+    </div>
+  </div>
+
+  <script src="/assets/js/home.js"></script>
+  <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(()=>{})}</script>
+  <script src="/common/storage.js"></script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#05050a"/>
+  <title>Legend Run – Meri Kamai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/css/game-base.css"/>
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-header">
+      <a href="/" class="back-btn">← Home</a>
+      <div class="game-title-wrap">
+        <span class="game-emoji">🏆</span>
+        <span class="game-name">Legend Run</span>
+      </div>
+      <div class="header-score">
+        <span class="hs-label">Best</span>
+        <span class="hs-val" id="bestDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="si-label">Score</span>
+        <span class="si-val" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Speed</span>
+        <span class="si-val" id="speedDisplay">1x</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Rank</span>
+        <span class="si-val rank-val" id="rankDisplay">Rookie</span>
+      </div>
+    </div>
+
+    <div class="game-area" style="padding:8px;gap:6px">
+
+      <!-- IDLE -->
+      <div id="lrIdle" style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:16px">
+        <div style="font-size:60px;filter:drop-shadow(0 0 20px #fbbf24)">🏆</div>
+        <div style="font-family:'Teko',sans-serif;font-size:32px;color:#fbbf24">BECOME A LEGEND</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;max-width:280px">
+          Obstacles jump karo.<br/>
+          Jitna zyada chalo, utna score badhega.<br/>
+          Ruko mat — Legends kabhi quit nahi karte!
+        </div>
+        <div style="display:flex;gap:12px;font-size:12px;color:var(--text2)">
+          <span>50 → Normal</span>
+          <span>100 → Pro</span>
+          <span>200 → LEGEND</span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);background:rgba(255,255,255,0.04);padding:8px 16px;border-radius:8px">
+          Tap / Space / Click = Jump<br/>Double tap = Double jump!
+        </div>
+      </div>
+
+      <!-- PLAYING -->
+      <div id="lrPlaying" style="display:none;flex-direction:column;align-items:center;gap:6px;width:100%">
+        <div style="font-family:'Orbitron',sans-serif;font-size:clamp(44px,11vw,64px);font-weight:900;color:#fbbf24;text-shadow:0 0 30px rgba(251,191,36,0.6)" id="lrScore">0</div>
+        <div style="font-family:'Teko',sans-serif;font-size:18px;letter-spacing:2px;color:var(--text2)" id="lrRankLabel">ROOKIE</div>
+        <canvas id="lrCanvas" class="game-canvas"></canvas>
+        <div class="feedback-msg" id="lrFeedback" style="font-size:16px;min-height:22px"></div>
+      </div>
+
+      <!-- RESULT -->
+      <div id="lrResult" style="display:none;flex-direction:column;align-items:center;gap:12px;text-align:center;width:100%">
+        <div style="font-size:50px" id="lrResultEmoji">💀</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;color:#fbbf24" id="lrFinalScore">0</div>
+        <div style="font-family:'Teko',sans-serif;font-size:24px" id="lrResultTitle">GAME OVER</div>
+        <div style="font-size:14px;color:var(--text2)" id="lrResultMsg"></div>
+        <div class="result-card" style="max-width:280px">
+          <div style="font-size:12px;color:var(--text2)">RANK ACHIEVED</div>
+          <div style="font-family:'Teko',sans-serif;font-size:30px;color:#fbbf24;margin:4px 0" id="lrFinalRank">—</div>
+          <div style="font-size:12px;color:var(--purple)" id="lrCompare">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-area">
+      <div class="ctrl-state" id="lrIdleCtrl">
+        <button class="btn-game-primary" id="lrBtnStart" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000">🏆 START RUNNING</button>
+      </div>
+      <div class="ctrl-state hidden" id="lrPlayCtrl">
+        <button class="btn-game-stop" id="lrBtnJump" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;animation:none;box-shadow:0 0 30px rgba(251,191,36,0.4)">
+          ↑ JUMP!
+        </button>
+      </div>
+      <div class="ctrl-state hidden" id="lrResultCtrl">
+        <button class="btn-game-primary" id="lrBtnRetry" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000">🔄 RETRY</button>
+        <button class="btn-game-secondary" id="lrBtnHome">🏠 Home</button>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="ps-label">Legend Progress</div>
+      <div class="ps-bar"><div class="ps-fill" id="lrProgress" style="width:0%;background:linear-gradient(90deg,#fbbf24,#f59e0b)"></div></div>
+    </div>
+  </div>
+
+  <script src="/common/storage.js"></script>
+  <script>
+    const canvas = document.getElementById('lrCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const G = {
+      state: 'idle',
+      score: 0,
+      best: 0,
+      speed: 4,
+      animId: null,
+      player: { x: 60, y: 0, vy: 0, onGround: true, jumps: 0, maxJumps: 2 },
+      obstacles: [],
+      particles: [],
+      stars: [],
+      bgX: 0,
+      groundY: 0,
+      spawnTimer: 0,
+      spawnInterval: 80,
+      frameCount: 0,
+      alive: true,
+    };
+
+    const PLAYER_W = 28, PLAYER_H = 32;
+    const OBS_W = 20;
+
+    const SFX = {
+      ctx: null,
+      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+      play(type) {
+        try {
+          this.init();
+          const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
+          o.connect(g); g.connect(this.ctx.destination);
+          if (type === 'jump') { o.frequency.setValueAtTime(300, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime+0.1); g.gain.setValueAtTime(0.08, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.15); }
+          else if (type === 'die') { o.type='sawtooth'; o.frequency.setValueAtTime(400, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime+0.5); g.gain.setValueAtTime(0.2, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.5); }
+          else if (type === 'score') { o.frequency.value = 880; g.gain.setValueAtTime(0.05, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.08); }
+          o.start(); o.stop(this.ctx.currentTime+0.6);
+        } catch(e) {}
+      }
+    };
+
+    function resize() {
+      const W = Math.min(360, window.innerWidth - 32);
+      const H = 180;
+      canvas.width = W; canvas.height = H;
+      G.groundY = H - 30;
+      if (!G.alive) return;
+      G.player.y = G.groundY - PLAYER_H;
+      // Init stars
+      G.stars = [];
+      for (let i = 0; i < 30; i++) {
+        G.stars.push({ x: Math.random()*W, y: Math.random()*(H*0.6), r: Math.random()*1.5+0.5, s: Math.random()*0.5+0.5 });
+      }
+    }
+    resize();
+    window.addEventListener('resize', () => { if (G.state === 'playing') resize(); });
+
+    function jump() {
+      if (!G.alive) return;
+      if (G.player.jumps < G.player.maxJumps) {
+        SFX.play('jump');
+        G.player.vy = -10;
+        G.player.onGround = false;
+        G.player.jumps++;
+        // particle burst
+        for (let i = 0; i < 5; i++) {
+          G.particles.push({ x: G.player.x + PLAYER_W/2, y: G.player.y + PLAYER_H, vx: (Math.random()-0.5)*3, vy: Math.random()*2, life: 30, color: '#fbbf24', r: 3 });
+        }
+      }
+    }
+
+    function getRank(score) {
+      if (score >= 200) return { title: 'LEGEND 🏆', color: '#fbbf24' };
+      if (score >= 100) return { title: 'PRO ⚡', color: '#ff6b00' };
+      if (score >= 50) return { title: 'SKILLED 💪', color: '#8b5cf6' };
+      if (score >= 20) return { title: 'BEGINNER', color: '#00d4ff' };
+      return { title: 'ROOKIE', color: '#888' };
+    }
+
+    function spawnObstacle() {
+      const W = canvas.width;
+      const types = [
+        { w: 20, h: 36, color: '#ff4444' },
+        { w: 20, h: 52, color: '#ff6b00' },
+        { w: 30, h: 24, color: '#cc00ff' },
+        { w: 16, h: 60, color: '#ff0088' },
+      ];
+      const t = types[Math.floor(Math.random() * types.length)];
+      G.obstacles.push({
+        x: W + 20,
+        y: G.groundY - t.h,
+        w: t.w,
+        h: t.h,
+        color: t.color,
+        passed: false,
+      });
+    }
+
+    function gameLoop() {
+      if (G.state !== 'playing' || !G.alive) return;
+      G.frameCount++;
+      const W = canvas.width; const H = canvas.height;
+
+      // Speed increase
+      G.speed = 4 + Math.floor(G.score / 20) * 0.4;
+      const speedMult = (G.speed / 4).toFixed(1);
+      document.getElementById('speedDisplay').textContent = speedMult + 'x';
+
+      // Physics
+      G.player.vy += 0.55; // gravity
+      G.player.y += G.player.vy;
+      if (G.player.y >= G.groundY - PLAYER_H) {
+        G.player.y = G.groundY - PLAYER_H;
+        G.player.vy = 0;
+        G.player.onGround = true;
+        G.player.jumps = 0;
+      }
+
+      // Spawn
+      G.spawnTimer++;
+      const interval = Math.max(30, G.spawnInterval - Math.floor(G.score / 10) * 3);
+      if (G.spawnTimer >= interval) {
+        spawnObstacle();
+        G.spawnTimer = 0;
+      }
+
+      // Score
+      if (G.frameCount % 6 === 0) {
+        G.score++;
+        if (G.score % 10 === 0) SFX.play('score');
+        document.getElementById('lrScore').textContent = G.score;
+        document.getElementById('scoreDisplay').textContent = G.score;
+        document.getElementById('lrProgress').style.width = Math.min(100, G.score / 2) + '%';
+        const rank = getRank(G.score);
+        document.getElementById('lrRankLabel').textContent = rank.title;
+        document.getElementById('lrRankLabel').style.color = rank.color;
+        document.getElementById('rankDisplay').textContent = rank.title;
+      }
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Sky gradient
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, '#07070f');
+      sky.addColorStop(1, '#0f0a18');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
+
+      // Stars
+      G.bgX -= G.speed * 0.2;
+      G.stars.forEach(s => {
+        s.x -= s.s * 0.3;
+        if (s.x < 0) s.x = W;
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+      });
+
+      // Ground
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, G.groundY, W, H - G.groundY);
+      ctx.fillStyle = 'rgba(251,191,36,0.15)';
+      ctx.fillRect(0, G.groundY, W, 2);
+
+      // Moving ground lines
+      const lineOffset = (G.frameCount * G.speed) % 60;
+      ctx.strokeStyle = 'rgba(251,191,36,0.08)';
+      ctx.lineWidth = 1;
+      for (let x = -60 + lineOffset; x < W + 60; x += 60) {
+        ctx.beginPath(); ctx.moveTo(x, G.groundY); ctx.lineTo(x - 30, H); ctx.stroke();
+      }
+
+      // Particles
+      G.particles = G.particles.filter(p => p.life > 0);
+      G.particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.life -= 3;
+        ctx.save(); ctx.globalAlpha = p.life / 30;
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      });
+
+      // Obstacles
+      let hit = false;
+      G.obstacles = G.obstacles.filter(ob => {
+        ob.x -= G.speed;
+        if (ob.x + ob.w < 0) return false;
+
+        // Draw
+        ctx.save();
+        ctx.shadowColor = ob.color;
+        ctx.shadowBlur = 10;
+        const obGrd = ctx.createLinearGradient(ob.x, ob.y, ob.x, ob.y + ob.h);
+        obGrd.addColorStop(0, ob.color);
+        obGrd.addColorStop(1, ob.color + '88');
+        ctx.fillStyle = obGrd;
+        ctx.fillRect(ob.x, ob.y, ob.w, ob.h);
+        ctx.restore();
+
+        // Collision (with margin)
+        const margin = 4;
+        const px = G.player.x + margin;
+        const py = G.player.y + margin;
+        const pw = PLAYER_W - margin*2;
+        const ph = PLAYER_H - margin*2;
+        if (px < ob.x + ob.w && px + pw > ob.x && py < ob.y + ob.h && py + ph > ob.y) {
+          hit = true;
+        }
+
+        // Score for passing
+        if (!ob.passed && ob.x + ob.w < G.player.x) {
+          ob.passed = true;
+        }
+
+        return true;
+      });
+
+      // Draw player
+      const px = G.player.x, py = G.player.y;
+      // Body
+      const pGrd = ctx.createLinearGradient(px, py, px + PLAYER_W, py + PLAYER_H);
+      pGrd.addColorStop(0, '#fbbf24');
+      pGrd.addColorStop(1, '#f59e0b');
+      ctx.fillStyle = pGrd;
+      ctx.beginPath();
+      ctx.roundRect(px, py, PLAYER_W, PLAYER_H, 6);
+      ctx.fill();
+      // Eyes
+      ctx.fillStyle = '#000';
+      ctx.beginPath(); ctx.arc(px + PLAYER_W - 8, py + 10, 3, 0, Math.PI*2); ctx.fill();
+      // Legs
+      if (G.player.onGround) {
+        const legAnim = Math.sin(G.frameCount * 0.4) * 4;
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(px + 4, py + PLAYER_H, 6, 4 + legAnim);
+        ctx.fillRect(px + 16, py + PLAYER_H, 6, 4 - legAnim);
+      }
+      // Glow
+      ctx.save();
+      ctx.shadowColor = '#fbbf24';
+      ctx.shadowBlur = 12;
+      ctx.strokeStyle = 'rgba(251,191,36,0.4)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(px, py, PLAYER_W, PLAYER_H, 6);
+      ctx.stroke();
+      ctx.restore();
+
+      if (hit) {
+        SFX.play('die');
+        G.alive = false;
+        // Death particles
+        for (let i = 0; i < 15; i++) {
+          G.particles.push({ x: px + PLAYER_W/2, y: py + PLAYER_H/2, vx: (Math.random()-0.5)*6, vy: (Math.random()-0.5)*6 - 2, life: 60, color: '#fbbf24', r: Math.random()*4+2 });
+        }
+        setTimeout(() => showResult(), 500);
+        return;
+      }
+
+      G.animId = requestAnimationFrame(gameLoop);
+    }
+
+    function showResult() {
+      G.state = 'result';
+      const s = G.score;
+      const isNew = s > G.best;
+      if (isNew) G.best = s;
+      Storage.set('legendrun', { best: G.best });
+      document.getElementById('bestDisplay').textContent = G.best;
+      document.getElementById('lrFinalScore').textContent = s;
+      const rank = getRank(s);
+      document.getElementById('lrFinalRank').textContent = rank.title;
+      document.getElementById('lrFinalRank').style.color = rank.color;
+      if (s >= 100) { document.getElementById('lrResultEmoji').textContent = '🏆'; document.getElementById('lrResultTitle').textContent = isNew ? 'LEGEND! NEW BEST! 🎉' : 'LEGEND!'; }
+      else if (s >= 50) { document.getElementById('lrResultEmoji').textContent = '🔥'; document.getElementById('lrResultTitle').textContent = 'PRO MOVE!'; }
+      else if (s >= 20) { document.getElementById('lrResultEmoji').textContent = '💪'; document.getElementById('lrResultTitle').textContent = 'KEEP GOING!'; }
+      else { document.getElementById('lrResultEmoji').textContent = '😤'; document.getElementById('lrResultTitle').textContent = 'BEGINNER?'; }
+      document.getElementById('lrResultMsg').textContent = isNew ? '🎉 New best! Legendary!' : NearMiss ? NearMiss[Math.floor(Math.random()*NearMiss.length)] : 'Try again!';
+      const pct = Math.min(99, Math.floor((s / 200) * 95) + 5);
+      document.getElementById('lrCompare').textContent = `Better than ${pct}% players 😏`;
+      ['lrIdleCtrl','lrPlayCtrl'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('lrResultCtrl').classList.remove('hidden');
+      document.getElementById('lrIdle').style.display = 'none';
+      document.getElementById('lrPlaying').style.display = 'none';
+      document.getElementById('lrResult').style.display = 'flex';
+    }
+
+    function startGame() {
+      SFX.init();
+      G.state = 'playing';
+      G.score = 0; G.speed = 4; G.frameCount = 0;
+      G.obstacles = []; G.particles = []; G.spawnTimer = 0; G.alive = true;
+      resize();
+      G.player.y = G.groundY - PLAYER_H;
+      G.player.vy = 0; G.player.jumps = 0; G.player.onGround = true;
+      document.getElementById('lrScore').textContent = '0';
+      document.getElementById('lrFeedback').textContent = '';
+      document.getElementById('lrIdle').style.display = 'none';
+      document.getElementById('lrPlaying').style.display = 'flex';
+      document.getElementById('lrResult').style.display = 'none';
+      document.getElementById('lrIdleCtrl').classList.add('hidden');
+      document.getElementById('lrPlayCtrl').classList.remove('hidden');
+      document.getElementById('lrResultCtrl').classList.add('hidden');
+      G.animId = requestAnimationFrame(gameLoop);
+    }
+
+    document.getElementById('lrBtnStart').addEventListener('click', startGame);
+    document.getElementById('lrBtnJump').addEventListener('click', jump);
+    document.getElementById('lrBtnRetry').addEventListener('click', () => {
+      if (window.shouldShowAd && shouldShowAd() && window.showAd) { showAd(startGame); return; }
+      startGame();
+    });
+    document.getElementById('lrBtnHome').addEventListener('click', () => window.location.href = '/');
+
+    canvas.addEventListener('click', jump);
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); jump(); }, { passive: false });
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        e.preventDefault();
+        if (G.state === 'idle') startGame();
+        else if (G.state === 'playing') jump();
+      }
+    });
+
+    // Also allow tap anywhere on game area
+    document.getElementById('lrPlayCtrl')?.addEventListener('touchstart', e => { e.preventDefault(); jump(); }, { passive: false });
+
+    const saved = Storage.get('legendrun') || {};
+    G.best = saved.best || 0;
+    document.getElementById('bestDisplay').textContent = G.best;
+  </script>
+</body>
+</html>

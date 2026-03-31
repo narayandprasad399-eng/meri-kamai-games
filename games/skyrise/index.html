@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#05050a"/>
+  <title>SkyRise – Meri Kamai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/css/game-base.css"/>
+  <style>
+    .rocket-wrap {
+      position: relative;
+      width: 100%;
+      height: 340px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .rocket-track {
+      width: 60px;
+      height: 300px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 30px;
+      position: relative;
+      overflow: visible;
+      border: 1px solid rgba(255,107,0,0.15);
+    }
+    .rocket-fill {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, #ff6b00, #ffcc00, #00ff88);
+      border-radius: 30px;
+      transition: none;
+      width: 100%;
+    }
+    .rocket-emoji {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%) rotate(-45deg);
+      font-size: 32px;
+      filter: drop-shadow(0 0 12px #ff6b00);
+      transition: none;
+      z-index: 2;
+    }
+    .rocket-trail {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      background: linear-gradient(to bottom, transparent, rgba(255,107,0,0.6));
+      bottom: 0;
+      border-radius: 3px;
+    }
+    .multiplier-display {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(56px, 14vw, 80px);
+      font-weight: 900;
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 0 30px rgba(255,107,0,0.8), 0 0 60px rgba(255,107,0,0.4);
+      letter-spacing: 2px;
+      margin: 8px 0;
+      line-height: 1;
+    }
+    .multiplier-display.crash {
+      color: #ff4444 !important;
+      text-shadow: 0 0 30px rgba(255,68,68,0.8) !important;
+      animation: shakeX 0.4s ease;
+    }
+    @keyframes shakeX {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-8px)}
+      40%{transform:translateX(8px)}
+      60%{transform:translateX(-6px)}
+      80%{transform:translateX(6px)}
+    }
+    .danger-zone {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 30%;
+      background: linear-gradient(to bottom, rgba(255,68,68,0.15), transparent);
+      border-radius: 30px 30px 0 0;
+      pointer-events: none;
+    }
+    #crashAnim {
+      position: absolute;
+      font-size: 60px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      display: none;
+      animation: popIn 0.4s ease;
+      z-index: 10;
+    }
+    @keyframes popIn {
+      0%{transform:translate(-50%,-50%) scale(0.3);opacity:0}
+      60%{transform:translate(-50%,-50%) scale(1.3)}
+      100%{transform:translate(-50%,-50%) scale(1);opacity:1}
+    }
+    .daily-challenge {
+      background: rgba(139,92,246,0.1);
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .dc-label { font-size: 12px; color: #a78bfa; font-weight: 700; letter-spacing: 1px; }
+    .dc-target { font-family: 'Orbitron', sans-serif; font-size: 18px; color: #fff; font-weight: 700; }
+    .stars-container {
+      position: absolute;
+      width: 100%; height: 100%;
+      top: 0; left: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .star-particle {
+      position: absolute;
+      font-size: 16px;
+      animation: starFloat 1s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes starFloat {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-60px) scale(0.5); }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <!-- Header -->
+    <div class="game-header">
+      <a href="/" class="back-btn">← Home</a>
+      <div class="game-title-wrap">
+        <span class="game-emoji">🚀</span>
+        <span class="game-name">SkyRise</span>
+      </div>
+      <div class="header-score">
+        <span class="hs-label">Best</span>
+        <span class="hs-val" id="bestDisplay">0.0x</span>
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="si-label">Streak</span>
+        <span class="si-val" id="streakDisplay">0🔥</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Today</span>
+        <span class="si-val" id="gamesDisplay">0 games</span>
+      </div>
+      <div class="stat-item rank-item">
+        <span class="si-label">Rank</span>
+        <span class="si-val rank-val" id="rankDisplay">Rookie</span>
+      </div>
+    </div>
+
+    <!-- Daily Challenge -->
+    <div class="daily-challenge" id="dailyChallenge">
+      <div>
+        <div class="dc-label">🎯 AAJ KA CHALLENGE</div>
+        <div style="font-size:12px;color:#888;margin-top:2px">Hit <span id="dcTarget">2.5x</span> — earn badge!</div>
+      </div>
+      <div class="dc-target" id="dcProgress">0/1</div>
+    </div>
+
+    <!-- Game Area -->
+    <div class="game-area">
+      <div class="stars-container" id="starsContainer"></div>
+      <div id="crashAnim">💥</div>
+
+      <div class="rocket-wrap">
+        <div class="rocket-track" id="rocketTrack">
+          <div class="danger-zone"></div>
+          <div class="rocket-trail" id="rocketTrail" style="height:0"></div>
+          <div class="rocket-fill" id="rocketFill" style="height:0%"></div>
+          <div class="rocket-emoji" id="rocketEmoji" style="bottom:-20px">🚀</div>
+        </div>
+      </div>
+
+      <div class="multiplier-display" id="multDisplay">—</div>
+
+      <div class="feedback-msg" id="feedbackMsg"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-area">
+      <!-- IDLE -->
+      <div class="ctrl-state" id="stateIdle">
+        <p class="ctrl-hint">Rocket upar jaega… sahi time pe STOP karo!</p>
+        <p class="ctrl-hint2">Jitna late stop karo, utna zyada score — par crash hua to ZERO!</p>
+        <button class="btn-game-primary" id="btnStart">
+          🚀 START
+        </button>
+      </div>
+
+      <!-- PLAYING -->
+      <div class="ctrl-state hidden" id="statePlaying">
+        <div class="risk-meter">
+          <div class="rm-label">RISK LEVEL</div>
+          <div class="rm-bar"><div class="rm-fill" id="riskFill"></div></div>
+        </div>
+        <button class="btn-game-stop" id="btnStop">
+          ✋ STOP!
+        </button>
+        <p class="ctrl-hint2">Ab bhi time hai… ya aur risk loge?</p>
+      </div>
+
+      <!-- RESULT -->
+      <div class="ctrl-state hidden" id="stateResult">
+        <div class="result-card" id="resultCard">
+          <div class="rc-mult" id="rcMult"></div>
+          <div class="rc-msg" id="rcMsg"></div>
+          <div class="rc-improvement" id="rcImprovement"></div>
+          <div class="rc-compare" id="rcCompare"></div>
+        </div>
+        <button class="btn-game-primary" id="btnRetry">🔄 RETRY</button>
+        <button class="btn-game-secondary" id="btnHome">🏠 Home</button>
+      </div>
+    </div>
+
+    <!-- You vs Others -->
+    <div class="vs-others" id="vsOthers" style="display:none">
+      <div class="vo-text">You are better than <span class="vo-pct" id="voPct">—</span>% players 😏</div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <div class="ps-label">Next Rank Progress</div>
+      <div class="ps-bar"><div class="ps-fill" id="progressFill" style="width:20%"></div></div>
+    </div>
+  </div>
+
+  <script src="/common/storage.js"></script>
+  <script>
+    // ===== SKYRISE GAME ENGINE =====
+    const GAME = {
+      state: 'idle',
+      mult: 1.0,
+      crashAt: 2.0,
+      interval: null,
+      prevBest: 0,
+      gamesPlayed: 0,
+      streak: 0,
+      dcTarget: 2.5,
+      dcDone: false,
+    };
+
+    // Sound engine
+    const SFX = {
+      ctx: null,
+      init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      },
+      play(type) {
+        try {
+          this.init();
+          const o = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          o.connect(g); g.connect(this.ctx.destination);
+          if (type === 'tick') {
+            o.frequency.setValueAtTime(440 + GAME.mult * 80, this.ctx.currentTime);
+            g.gain.setValueAtTime(0.05, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+            o.start(); o.stop(this.ctx.currentTime + 0.1);
+          } else if (type === 'stop') {
+            o.frequency.setValueAtTime(660, this.ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
+            g.gain.setValueAtTime(0.15, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+            o.start(); o.stop(this.ctx.currentTime + 0.3);
+          } else if (type === 'crash') {
+            o.type = 'sawtooth';
+            o.frequency.setValueAtTime(200, this.ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.5);
+            g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.5);
+            o.start(); o.stop(this.ctx.currentTime + 0.5);
+          } else if (type === 'win') {
+            [523, 659, 784, 1047].forEach((f, i) => {
+              const o2 = this.ctx.createOscillator();
+              const g2 = this.ctx.createGain();
+              o2.connect(g2); g2.connect(this.ctx.destination);
+              o2.frequency.value = f;
+              g2.gain.setValueAtTime(0.1, this.ctx.currentTime + i * 0.08);
+              g2.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.08 + 0.2);
+              o2.start(this.ctx.currentTime + i * 0.08);
+              o2.stop(this.ctx.currentTime + i * 0.08 + 0.2);
+            });
+          }
+        } catch(e) {}
+      }
+    };
+
+    // DOM refs
+    const $ = id => document.getElementById(id);
+    const multDisplay = $('multDisplay');
+    const rocketFill = $('rocketFill');
+    const rocketEmoji = $('rocketEmoji');
+    const rocketTrail = $('rocketTrail');
+    const riskFill = $('riskFill');
+    const feedbackMsg = $('feedbackMsg');
+    const bestDisplay = $('bestDisplay');
+    const streakDisplay = $('streakDisplay');
+    const gamesDisplay = $('gamesDisplay');
+    const rankDisplay = $('rankDisplay');
+    const progressFill = $('progressFill');
+    const vsOthers = $('vsOthers');
+    const voPct = $('voPct');
+    const rcMult = $('rcMult');
+    const rcMsg = $('rcMsg');
+    const rcImprovement = $('rcImprovement');
+    const rcCompare = $('rcCompare');
+    const crashAnim = $('crashAnim');
+    const dcTarget = $('dcTarget');
+    const dcProgress = $('dcProgress');
+
+    function loadState() {
+      const s = Storage.get('skyrise') || {};
+      GAME.prevBest = s.best || 0;
+      GAME.gamesPlayed = s.games || 0;
+      GAME.streak = s.streak || 0;
+      GAME.dcTarget = 1.8 + (new Date().getDate() % 10) * 0.15;
+      GAME.dcTarget = Math.round(GAME.dcTarget * 10) / 10;
+      GAME.dcDone = s.dcDate === today() && s.dcDone;
+    }
+
+    function saveState() {
+      Storage.set('skyrise', {
+        best: GAME.prevBest,
+        games: GAME.gamesPlayed,
+        streak: GAME.streak,
+        dcDate: today(),
+        dcDone: GAME.dcDone,
+      });
+    }
+
+    function today() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    function updateUI() {
+      bestDisplay.textContent = GAME.prevBest.toFixed(1) + 'x';
+      streakDisplay.textContent = GAME.streak + '🔥';
+      gamesDisplay.textContent = GAME.gamesPlayed + ' games';
+      dcTarget.textContent = GAME.dcTarget.toFixed(1) + 'x';
+      dcProgress.textContent = GAME.dcDone ? '✅' : '0/1';
+
+      if (window.RankSystem) {
+        const rank = RankSystem.getRank(GAME.prevBest, 'skyrise');
+        rankDisplay.textContent = rank.title;
+        rankDisplay.style.color = rank.color;
+
+        const ranks = [0, 1.5, 2.0, 2.5, 3.0, 3.5, 99];
+        const idx = ranks.findIndex(r => GAME.prevBest < r) - 1;
+        const cur = ranks[Math.max(0, idx)] || 0;
+        const next = ranks[Math.min(ranks.length - 1, idx + 1)] || 3.5;
+        const pct = next > cur ? ((GAME.prevBest - cur) / (next - cur)) * 100 : 100;
+        progressFill.style.width = Math.min(100, Math.max(5, pct)) + '%';
+      }
+    }
+
+    function setState(s) {
+      ['stateIdle', 'statePlaying', 'stateResult'].forEach(id => {
+        $(id).classList.toggle('hidden', id !== 'state' + capitalize(s));
+      });
+      GAME.state = s;
+    }
+
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    function generateCrashPoint() {
+      // Weighted: more likely 1.2–2.5, rare 3+
+      const r = Math.random();
+      if (r < 0.25) return 1.0 + Math.random() * 0.5;    // 25%: 1.0–1.5
+      if (r < 0.55) return 1.5 + Math.random() * 0.7;    // 30%: 1.5–2.2
+      if (r < 0.80) return 2.2 + Math.random() * 0.8;    // 25%: 2.2–3.0
+      if (r < 0.95) return 3.0 + Math.random() * 1.0;    // 15%: 3.0–4.0
+      return 4.0 + Math.random() * 2.0;                  // 5%: 4.0–6.0
+    }
+
+    let tickCount = 0;
+    function startGame() {
+      SFX.init();
+      GAME.mult = 1.0;
+      GAME.crashAt = generateCrashPoint();
+      tickCount = 0;
+      crashAnim.style.display = 'none';
+      multDisplay.className = 'multiplier-display';
+      multDisplay.textContent = '1.0x';
+      feedbackMsg.textContent = '';
+      rocketFill.style.height = '0%';
+      rocketTrail.style.height = '0';
+      rocketEmoji.style.bottom = '-20px';
+      vsOthers.style.display = 'none';
+      setState('playing');
+
+      GAME.interval = setInterval(() => {
+        tickCount++;
+        const speed = 0.03 + GAME.mult * 0.008;
+        GAME.mult += speed;
+        GAME.mult = Math.round(GAME.mult * 100) / 100;
+
+        // Update display
+        multDisplay.textContent = GAME.mult.toFixed(2) + 'x';
+
+        // Color based on risk
+        const riskPct = GAME.mult / GAME.crashAt;
+        if (riskPct > 0.85) multDisplay.style.color = '#ff4444';
+        else if (riskPct > 0.65) multDisplay.style.color = '#ffcc00';
+        else multDisplay.style.color = '#fff';
+
+        // Rocket visual
+        const pct = Math.min(95, ((GAME.mult - 1) / (GAME.crashAt - 1 + 0.5)) * 95);
+        rocketFill.style.height = pct + '%';
+        rocketEmoji.style.bottom = (pct / 100 * 290 - 10) + 'px';
+        rocketTrail.style.height = (pct / 100 * 200) + 'px';
+
+        // Risk meter
+        riskFill.style.width = Math.min(100, riskPct * 100) + '%';
+        riskFill.style.background = riskPct > 0.8
+          ? 'linear-gradient(90deg, #ff4444, #ff0000)'
+          : riskPct > 0.6
+          ? 'linear-gradient(90deg, #ff6b00, #ffcc00)'
+          : 'linear-gradient(90deg, #00ff88, #00d4ff)';
+
+        // Tick sound
+        if (tickCount % 5 === 0) SFX.play('tick');
+
+        // Check crash
+        if (GAME.mult >= GAME.crashAt) {
+          crash();
+        }
+      }, 80);
+    }
+
+    function stopGame() {
+      if (GAME.state !== 'playing') return;
+      clearInterval(GAME.interval);
+      SFX.play('stop');
+      const score = GAME.mult;
+      showResult(score, false);
+    }
+
+    function crash() {
+      clearInterval(GAME.interval);
+      SFX.play('crash');
+      multDisplay.classList.add('crash');
+      multDisplay.textContent = '💥 CRASH!';
+      rocketEmoji.textContent = '💥';
+
+      // Screen shake
+      document.querySelector('.game-container').style.animation = 'shakeX 0.3s ease';
+      setTimeout(() => document.querySelector('.game-container').style.animation = '', 400);
+
+      crashAnim.style.display = 'block';
+      setTimeout(() => { crashAnim.style.display = 'none'; }, 1200);
+
+      const prevMult = Math.round((GAME.crashAt - 0.15) * 100) / 100;
+      setTimeout(() => showResult(prevMult, true), 600);
+    }
+
+    function showResult(score, wasCrash) {
+      setState('result');
+      GAME.gamesPlayed++;
+
+      const isNewBest = score > GAME.prevBest;
+      if (isNewBest) {
+        GAME.prevBest = score;
+        SFX.play('win');
+        spawnStars();
+      }
+
+      if (!wasCrash) {
+        GAME.streak++;
+      } else {
+        GAME.streak = 0;
+      }
+
+      // Daily challenge check
+      if (score >= GAME.dcTarget) {
+        GAME.dcDone = true;
+        dcProgress.textContent = '✅';
+      }
+
+      saveState();
+      updateUI();
+
+      rcMult.textContent = wasCrash ? '💥 ' + score.toFixed(2) + 'x' : score.toFixed(2) + 'x';
+      rcMult.style.color = wasCrash ? '#ff4444' : score >= 3 ? '#00ff88' : score >= 2 ? '#ffcc00' : '#ff6b00';
+
+      // Messages
+      const msgs = wasCrash
+        ? Feedback.skyrise.crash
+        : score >= GAME.crashAt * 0.9
+        ? Feedback.skyrise.perfect
+        : Feedback.skyrise.late;
+      rcMsg.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+
+      // Near miss
+      if (!wasCrash && GAME.crashAt - score < 0.2) {
+        rcImprovement.textContent = NearMiss[Math.floor(Math.random() * NearMiss.length)];
+        rcImprovement.style.color = '#ff6b00';
+      } else if (isNewBest) {
+        rcImprovement.textContent = '🎉 NEW BEST! ' + score.toFixed(2) + 'x';
+        rcImprovement.style.color = '#00ff88';
+      } else {
+        const prev = Storage.get('skyrise')?.best || 0;
+        if (prev > 0) {
+          const diff = score - prev;
+          rcImprovement.textContent = diff >= 0 ? `↑ ${diff.toFixed(2)}x improvement!` : `Last best: ${prev.toFixed(2)}x`;
+          rcImprovement.style.color = diff >= 0 ? '#00ff88' : '#888';
+        } else {
+          rcImprovement.textContent = '';
+        }
+      }
+
+      // You vs Others
+      const pct = Math.min(99, Math.floor((score / 4.0) * 95));
+      voPct.textContent = pct;
+      rcCompare.textContent = `You are better than ${pct}% players 😏`;
+      rcCompare.style.color = '#8b5cf6';
+      vsOthers.style.display = 'block';
+    }
+
+    function spawnStars() {
+      const container = $('starsContainer');
+      const emojis = ['⭐', '🌟', '✨', '🎉', '🔥', '💫'];
+      for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+          const s = document.createElement('div');
+          s.className = 'star-particle';
+          s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          s.style.left = Math.random() * 80 + 10 + '%';
+          s.style.top = Math.random() * 60 + 20 + '%';
+          container.appendChild(s);
+          setTimeout(() => s.remove(), 1000);
+        }, i * 80);
+      }
+    }
+
+    // Event listeners
+    $('btnStart').addEventListener('click', startGame);
+    $('btnStop').addEventListener('click', stopGame);
+    $('btnRetry').addEventListener('click', () => {
+      if (window.shouldShowAd && shouldShowAd()) {
+        if (window.showAd) { showAd(startGame); return; }
+      }
+      startGame();
+    });
+    $('btnHome').addEventListener('click', () => window.location.href = '/');
+
+    // Touch/keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (GAME.state === 'idle') startGame();
+        else if (GAME.state === 'playing') stopGame();
+      }
+    });
+
+    // Init
+    loadState();
+    updateUI();
+  </script>
+</body>
+</html>

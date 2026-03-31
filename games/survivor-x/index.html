@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#05050a"/>
+  <title>Survivor X – Meri Kamai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/css/game-base.css"/>
+  <style>
+    #gameCanvas {
+      background: #07070f;
+      border-radius: 12px;
+      border: 1px solid rgba(0,212,255,0.15);
+      display: block;
+      touch-action: none;
+      max-width: 100%;
+    }
+    .time-display {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(48px, 14vw, 72px);
+      font-weight: 900;
+      color: var(--green);
+      text-shadow: 0 0 30px rgba(0,255,136,0.6);
+      line-height: 1;
+    }
+    .time-display.danger { color: var(--red); text-shadow: 0 0 30px rgba(255,68,68,0.6); }
+    .rank-display {
+      font-family: 'Teko', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    .shield-bar {
+      width: 100%;
+      max-width: 340px;
+      height: 10px;
+      background: rgba(0,255,136,0.1);
+      border-radius: 5px;
+      overflow: hidden;
+      border: 1px solid rgba(0,255,136,0.2);
+    }
+    .shield-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      border-radius: 5px;
+      transition: width 0.1s;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-header">
+      <a href="/" class="back-btn">← Home</a>
+      <div class="game-title-wrap">
+        <span class="game-emoji">🛡</span>
+        <span class="game-name">Survivor X</span>
+      </div>
+      <div class="header-score">
+        <span class="hs-label">Best</span>
+        <span class="hs-val" id="bestDisplay">0s</span>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="si-label">Time</span>
+        <span class="si-val" id="timeDisplay">0.0s</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Level</span>
+        <span class="si-val" id="levelDisplay">1</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Rank</span>
+        <span class="si-val rank-val" id="rankDisplay">—</span>
+      </div>
+    </div>
+
+    <div class="game-area" style="padding:8px;gap:8px">
+
+      <!-- IDLE -->
+      <div id="svIdle" style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:20px">
+        <div style="font-size:60px;filter:drop-shadow(0 0 20px #00ff88)">🛡</div>
+        <div style="font-family:'Teko',sans-serif;font-size:32px;color:var(--green)">SURVIVE THE CHAOS</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;max-width:280px">
+          Obstacles aate rahenge…<br/>
+          Tumhe bas touch se bachna hai.<br/>
+          Jitna zyada survive karo, utna badha score!
+        </div>
+        <div style="display:flex;gap:16px;font-size:13px;color:var(--text2)">
+          <span>5s → Survivor</span>
+          <span>15s → Pro</span>
+          <span>30s → HERO</span>
+        </div>
+      </div>
+
+      <!-- PLAYING -->
+      <div id="svPlaying" style="display:none;flex-direction:column;align-items:center;gap:8px;width:100%">
+        <div class="time-display" id="svTime">0.0</div>
+        <div class="rank-display" id="svRank">—</div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="shield-bar">
+          <div class="shield-fill" id="shieldFill" style="width:100%"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text2)">Drag to move • Stay alive!</div>
+      </div>
+
+      <!-- RESULT -->
+      <div id="svResult" style="display:none;flex-direction:column;align-items:center;gap:12px;text-align:center;width:100%">
+        <div style="font-size:50px" id="svResultEmoji">⚰️</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;color:var(--green)" id="svFinalTime">0.0s</div>
+        <div style="font-family:'Teko',sans-serif;font-size:24px;font-weight:700" id="svResultTitle">SURVIVED!</div>
+        <div style="font-size:14px;color:var(--text2)" id="svResultMsg"></div>
+        <div class="result-card" style="max-width:280px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:4px">YOUR RANK</div>
+          <div style="font-family:'Teko',sans-serif;font-size:28px;color:var(--green)" id="svFinalRank">—</div>
+          <div style="font-size:12px;color:var(--purple);margin-top:4px" id="svCompare">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-area">
+      <div class="ctrl-state" id="svIdleCtrl">
+        <button class="btn-game-primary" id="svBtnStart" style="background:linear-gradient(135deg,#00ff88,#00d4ff);color:#000">🛡 START SURVIVING</button>
+      </div>
+      <div class="ctrl-state hidden" id="svPlayCtrl">
+        <div class="ctrl-hint2">Drag anywhere to move your shield</div>
+      </div>
+      <div class="ctrl-state hidden" id="svResultCtrl">
+        <button class="btn-game-primary" id="svBtnRetry" style="background:linear-gradient(135deg,#00ff88,#00d4ff);color:#000">🔄 RETRY</button>
+        <button class="btn-game-secondary" id="svBtnHome">🏠 Home</button>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="ps-label">Survival Mastery</div>
+      <div class="ps-bar"><div class="ps-fill" id="svProgress" style="width:5%;background:linear-gradient(90deg,#00ff88,#00d4ff)"></div></div>
+    </div>
+  </div>
+
+  <script src="/common/storage.js"></script>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const G = {
+      state: 'idle',
+      time: 0,
+      best: 0,
+      player: { x: 0, y: 0, r: 18, targetX: 0, targetY: 0 },
+      obstacles: [],
+      particles: [],
+      startTime: 0,
+      animId: null,
+      lives: 1,
+      shield: 100,
+      level: 1,
+    };
+
+    const SFX = {
+      ctx: null,
+      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+      play(type) {
+        try {
+          this.init();
+          const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
+          o.connect(g); g.connect(this.ctx.destination);
+          if (type === 'hit') {
+            o.type = 'square'; o.frequency.value = 180;
+            g.gain.setValueAtTime(0.1, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+          } else if (type === 'die') {
+            o.type = 'sawtooth'; o.frequency.setValueAtTime(400, this.ctx.currentTime);
+            o.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.6);
+            g.gain.setValueAtTime(0.2, this.ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.6);
+          }
+          o.start(); o.stop(this.ctx.currentTime + 0.6);
+        } catch(e) {}
+      }
+    };
+
+    function resize() {
+      const W = Math.min(340, window.innerWidth - 32);
+      const H = Math.min(220, window.innerHeight * 0.3);
+      canvas.width = W; canvas.height = H;
+      G.player.x = W / 2; G.player.y = H / 2;
+      G.player.targetX = W / 2; G.player.targetY = H / 2;
+    }
+    resize();
+    window.addEventListener('resize', () => { if (G.state === 'playing') resize(); });
+
+    function spawnObstacle() {
+      const W = canvas.width; const H = canvas.height;
+      const edge = Math.floor(Math.random() * 4);
+      let x, y, vx, vy;
+      const speed = 1.5 + G.level * 0.3 + Math.random();
+      if (edge === 0) { x = Math.random()*W; y = -20; vx = (Math.random()-0.5)*2; vy = speed; }
+      else if (edge === 1) { x = W+20; y = Math.random()*H; vx = -speed; vy = (Math.random()-0.5)*2; }
+      else if (edge === 2) { x = Math.random()*W; y = H+20; vx = (Math.random()-0.5)*2; vy = -speed; }
+      else { x = -20; y = Math.random()*H; vx = speed; vy = (Math.random()-0.5)*2; }
+      const colors = ['#ff4444','#ff6b00','#ff0088','#ffcc00','#cc00ff'];
+      G.obstacles.push({ x, y, vx, vy, r: 8 + Math.random()*12, color: colors[Math.floor(Math.random()*colors.length)], hit: false });
+    }
+
+    function getRankInfo(t) {
+      if (t >= 60) return { title: 'LEGEND 🏆', color: '#fbbf24' };
+      if (t >= 30) return { title: 'HERO 🔥', color: '#ff6b00' };
+      if (t >= 20) return { title: 'PRO ⚡', color: '#8b5cf6' };
+      if (t >= 10) return { title: 'SKILLED 💪', color: '#00d4ff' };
+      if (t >= 5) return { title: 'SURVIVOR 🛡', color: '#00ff88' };
+      return { title: 'ROOKIE', color: '#888' };
+    }
+
+    let lastSpawn = 0;
+    function gameLoop(ts) {
+      if (G.state !== 'playing') return;
+      const elapsed = (Date.now() - G.startTime) / 1000;
+      G.time = elapsed;
+      G.level = 1 + Math.floor(elapsed / 5);
+
+      document.getElementById('timeDisplay').textContent = elapsed.toFixed(1) + 's';
+      document.getElementById('svTime').textContent = elapsed.toFixed(1);
+      document.getElementById('levelDisplay').textContent = G.level;
+
+      const rank = getRankInfo(elapsed);
+      document.getElementById('svRank').textContent = rank.title;
+      document.getElementById('svRank').style.color = rank.color;
+      document.getElementById('rankDisplay').textContent = rank.title;
+
+      // Spawn obstacles
+      const spawnRate = Math.max(400, 1200 - G.level * 60);
+      if (ts - lastSpawn > spawnRate) {
+        const count = 1 + Math.floor(G.level / 3);
+        for (let i = 0; i < count; i++) spawnObstacle();
+        lastSpawn = ts;
+      }
+
+      const W = canvas.width; const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Background grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 30) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+      for (let y = 0; y < H; y += 30) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+      // Lerp player to target
+      G.player.x += (G.player.targetX - G.player.x) * 0.15;
+      G.player.y += (G.player.targetY - G.player.y) * 0.15;
+      G.player.x = Math.max(G.player.r, Math.min(W - G.player.r, G.player.x));
+      G.player.y = Math.max(G.player.r, Math.min(H - G.player.r, G.player.y));
+
+      // Draw player
+      const grd = ctx.createRadialGradient(G.player.x, G.player.y, 0, G.player.x, G.player.y, G.player.r);
+      grd.addColorStop(0, '#ffffff');
+      grd.addColorStop(0.5, '#00d4ff');
+      grd.addColorStop(1, 'rgba(0,212,255,0)');
+      ctx.beginPath();
+      ctx.arc(G.player.x, G.player.y, G.player.r, 0, Math.PI*2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+      // Shield ring
+      ctx.beginPath();
+      ctx.arc(G.player.x, G.player.y, G.player.r + 4, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(0,212,255,0.5)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Particles
+      G.particles = G.particles.filter(p => p.life > 0);
+      G.particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.life -= 2;
+        ctx.save(); ctx.globalAlpha = p.life / 100;
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (p.life/100), 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      });
+
+      // Obstacles
+      let dead = false;
+      G.obstacles = G.obstacles.filter(ob => {
+        ob.x += ob.vx; ob.y += ob.vy;
+        if (ob.x < -50 || ob.x > W+50 || ob.y < -50 || ob.y > H+50) return false;
+
+        // Glow
+        ctx.save();
+        ctx.shadowColor = ob.color;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(ob.x, ob.y, ob.r, 0, Math.PI*2);
+        ctx.fillStyle = ob.color;
+        ctx.fill();
+        ctx.restore();
+
+        // Collision
+        if (!ob.hit) {
+          const dx = G.player.x - ob.x; const dy = G.player.y - ob.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < G.player.r + ob.r - 4) {
+            ob.hit = true;
+            SFX.play('hit');
+            // Particles
+            for (let i = 0; i < 8; i++) {
+              G.particles.push({ x: ob.x, y: ob.y, vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4, r: 4, color: ob.color, life: 80 });
+            }
+            dead = true;
+          }
+        }
+        return !ob.hit;
+      });
+
+      if (dead) {
+        SFX.play('die');
+        cancelAnimationFrame(G.animId);
+        setTimeout(() => showResult(), 300);
+        return;
+      }
+
+      // Shield bar
+      document.getElementById('shieldFill').style.width = '100%';
+      document.getElementById('svProgress').style.width = Math.min(100, (elapsed / 60) * 100) + '%';
+
+      G.animId = requestAnimationFrame(gameLoop);
+    }
+
+    function showResult() {
+      G.state = 'result';
+      const t = G.time;
+      const isNew = t > G.best;
+      if (isNew) G.best = t;
+      Storage.set('survivor', { best: G.best });
+      document.getElementById('bestDisplay').textContent = G.best.toFixed(1) + 's';
+      document.getElementById('svFinalTime').textContent = t.toFixed(1) + 's';
+      const rank = getRankInfo(t);
+      document.getElementById('svFinalRank').textContent = rank.title;
+      document.getElementById('svFinalRank').style.color = rank.color;
+      if (t >= 30) document.getElementById('svResultEmoji').textContent = '🏆';
+      else if (t >= 10) document.getElementById('svResultEmoji').textContent = '🔥';
+      else document.getElementById('svResultEmoji').textContent = '💥';
+      document.getElementById('svResultTitle').textContent = isNew ? 'NEW BEST! 🎉' : rank.title;
+      document.getElementById('svResultMsg').textContent = t < 5 ? 'Aur practice karo!' : t < 15 ? 'Accha tha! Aur try karo 💪' : 'Zabardast survival! 🔥';
+      const pct = Math.min(99, Math.floor((t / 60) * 95) + 5);
+      document.getElementById('svCompare').textContent = `You are better than ${pct}% players 😏`;
+      ['svIdleCtrl','svPlayCtrl'].forEach(id => document.getElementById(id).classList.add('hidden'));
+      document.getElementById('svResultCtrl').classList.remove('hidden');
+      document.getElementById('svIdle').style.display = 'none';
+      document.getElementById('svPlaying').style.display = 'none';
+      document.getElementById('svResult').style.display = 'flex';
+    }
+
+    function startGame() {
+      SFX.init();
+      G.state = 'playing';
+      G.obstacles = []; G.particles = [];
+      G.startTime = Date.now();
+      G.time = 0;
+      resize();
+      lastSpawn = 0;
+      document.getElementById('svIdle').style.display = 'none';
+      document.getElementById('svPlaying').style.display = 'flex';
+      document.getElementById('svResult').style.display = 'none';
+      document.getElementById('svIdleCtrl').classList.add('hidden');
+      document.getElementById('svPlayCtrl').classList.remove('hidden');
+      document.getElementById('svResultCtrl').classList.add('hidden');
+      G.animId = requestAnimationFrame(gameLoop);
+    }
+
+    // Touch/mouse controls
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches ? e.touches[0] : e;
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+    }
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); const p = getPos(e); G.player.targetX = p.x; G.player.targetY = p.y; }, { passive: false });
+    canvas.addEventListener('mousemove', e => { const p = getPos(e); G.player.targetX = p.x; G.player.targetY = p.y; });
+
+    // Also allow full screen drag
+    document.addEventListener('touchmove', e => {
+      if (G.state === 'playing') {
+        const rect = canvas.getBoundingClientRect();
+        const t = e.touches[0];
+        G.player.targetX = t.clientX - rect.left;
+        G.player.targetY = t.clientY - rect.top;
+      }
+    }, { passive: false });
+
+    document.getElementById('svBtnStart').addEventListener('click', startGame);
+    document.getElementById('svBtnRetry').addEventListener('click', () => {
+      if (window.shouldShowAd && shouldShowAd() && window.showAd) { showAd(startGame); return; }
+      startGame();
+    });
+    document.getElementById('svBtnHome').addEventListener('click', () => window.location.href = '/');
+
+    const saved = Storage.get('survivor') || {};
+    G.best = saved.best || 0;
+    document.getElementById('bestDisplay').textContent = G.best.toFixed(1) + 's';
+  </script>
+</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#05050a"/>
+  <title>Clutch X – Meri Kamai</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/assets/css/game-base.css"/>
+  <style>
+    .cx-target-wrap {
+      position: relative;
+      width: 280px; height: 280px;
+      margin: 0 auto;
+    }
+    .cx-outer-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 3px solid rgba(255,107,0,0.2);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      transition: none;
+    }
+    .cx-zone {
+      position: absolute;
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      border: 2px solid rgba(255,255,255,0.1);
+    }
+    .cx-zone.perfect { border-color: rgba(0,255,136,0.5); background: rgba(0,255,136,0.05); }
+    .cx-zone.good { border-color: rgba(255,204,0,0.3); }
+    .cx-zone.ok { border-color: rgba(255,107,0,0.2); }
+    .cx-shrinking-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 4px solid var(--accent);
+      box-shadow: 0 0 20px rgba(255,107,0,0.6), inset 0 0 10px rgba(255,107,0,0.1);
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      transition: none;
+    }
+    .cx-center {
+      position: absolute;
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      background: radial-gradient(circle, #fff, var(--accent));
+      box-shadow: 0 0 20px var(--accent);
+      width: 24px; height: 24px;
+    }
+    .cx-score-big {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(52px, 13vw, 72px);
+      font-weight: 900;
+      color: var(--accent);
+      text-shadow: 0 0 30px rgba(255,107,0,0.6);
+      line-height: 1;
+    }
+    .cx-streak {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+    }
+    .cx-streak-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      transition: all 0.2s;
+    }
+    .cx-streak-dot.active {
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+    }
+    .accuracy-display {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .hit-flash {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+    }
+    @keyframes hitExpand {
+      0% { width: 20px; height: 20px; opacity: 1; }
+      100% { width: 200px; height: 200px; opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="game-header">
+      <a href="/" class="back-btn">← Home</a>
+      <div class="game-title-wrap">
+        <span class="game-emoji">⚡</span>
+        <span class="game-name">Clutch X</span>
+      </div>
+      <div class="header-score">
+        <span class="hs-label">Best</span>
+        <span class="hs-val" id="bestDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="si-label">Score</span>
+        <span class="si-val" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Streak</span>
+        <span class="si-val" id="streakDisplay">0🔥</span>
+      </div>
+      <div class="stat-item">
+        <span class="si-label">Accuracy</span>
+        <span class="si-val accuracy-display" id="accDisplay">—</span>
+      </div>
+    </div>
+
+    <div class="game-area" style="gap:10px">
+
+      <!-- IDLE -->
+      <div id="cxIdle" style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:20px">
+        <div style="font-size:60px;animation:pulse 1s infinite">⚡</div>
+        <div style="font-family:'Teko',sans-serif;font-size:32px;color:var(--accent)">LAST SECOND HERO</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;max-width:280px">
+          Ring shrink ho rahi hai…<br/>
+          Bilkul sahi time pe TAP karo!<br/>
+          Perfect zone me aana = maximum points!
+        </div>
+      </div>
+
+      <!-- PLAYING -->
+      <div id="cxPlaying" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%">
+        <div class="cx-score-big" id="cxScore">0</div>
+        <div class="cx-streak" id="cxStreak">
+          <div class="cx-streak-dot"></div>
+          <div class="cx-streak-dot"></div>
+          <div class="cx-streak-dot"></div>
+          <div class="cx-streak-dot"></div>
+          <div class="cx-streak-dot"></div>
+        </div>
+
+        <div class="cx-target-wrap" id="cxTargetWrap">
+          <!-- Zone rings -->
+          <div class="cx-zone ok" id="zOk"></div>
+          <div class="cx-zone good" id="zGood"></div>
+          <div class="cx-zone perfect" id="zPerfect"></div>
+          <!-- Shrinking ring -->
+          <div class="cx-shrinking-ring" id="cxRing"></div>
+          <!-- Center -->
+          <div class="cx-center"></div>
+          <!-- Hit flash -->
+          <div class="hit-flash" id="hitFlash"></div>
+        </div>
+
+        <div class="feedback-msg" id="cxFeedback" style="font-size:20px;min-height:28px"></div>
+      </div>
+
+      <!-- RESULT -->
+      <div id="cxResult" style="display:none;flex-direction:column;align-items:center;gap:12px;text-align:center;width:100%">
+        <div style="font-size:50px" id="cxResultEmoji">⚡</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;color:var(--accent)" id="cxFinalScore">0</div>
+        <div style="font-family:'Teko',sans-serif;font-size:24px" id="cxResultTitle">CLUTCH!</div>
+        <div style="font-size:14px;color:var(--text2)" id="cxResultMsg"></div>
+        <div class="result-card" style="max-width:280px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+            <div><div style="color:var(--text2);font-size:10px;letter-spacing:1px">BEST STREAK</div><div style="font-family:'Orbitron',sans-serif;font-size:20px;color:var(--accent)" id="cxFinalStreak">0</div></div>
+            <div><div style="color:var(--text2);font-size:10px;letter-spacing:1px">ACCURACY</div><div style="font-family:'Orbitron',sans-serif;font-size:20px;color:var(--green)" id="cxFinalAcc">—</div></div>
+          </div>
+          <div style="font-size:12px;color:var(--purple);margin-top:8px" id="cxCompare">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls-area">
+      <div class="ctrl-state" id="cxIdleCtrl">
+        <button class="btn-game-primary" id="cxBtnStart">⚡ START</button>
+      </div>
+      <div class="ctrl-state hidden" id="cxPlayCtrl">
+        <button class="btn-game-stop" id="cxBtnTap">⚡ TAP NOW!</button>
+      </div>
+      <div class="ctrl-state hidden" id="cxResultCtrl">
+        <button class="btn-game-primary" id="cxBtnRetry">🔄 RETRY</button>
+        <button class="btn-game-secondary" id="cxBtnHome">🏠 Home</button>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="ps-label">Clutch Master Progress</div>
+      <div class="ps-bar"><div class="ps-fill" id="cxProgress" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <script src="/common/storage.js"></script>
+  <script>
+    const G = {
+      state: 'idle',
+      score: 0,
+      best: 0,
+      streak: 0,
+      bestStreak: 0,
+      hits: 0,
+      total: 0,
+      ringSize: 0,
+      ringTarget: 30,
+      animId: null,
+      missCount: 0,
+      maxMiss: 3,
+      round: 0,
+    };
+
+    const PERFECT_R = 36; const GOOD_R = 60; const OK_R = 90;
+    const START_R = 130;
+
+    const SFX = {
+      ctx: null,
+      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+      play(type) {
+        try {
+          this.init();
+          const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
+          o.connect(g); g.connect(this.ctx.destination);
+          if (type === 'perfect') {
+            [880, 1047, 1319].forEach((f, i) => {
+              const o2 = this.ctx.createOscillator(); const g2 = this.ctx.createGain();
+              o2.connect(g2); g2.connect(this.ctx.destination);
+              o2.frequency.value = f;
+              g2.gain.setValueAtTime(0.1, this.ctx.currentTime + i*0.05);
+              g2.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i*0.05+0.15);
+              o2.start(this.ctx.currentTime + i*0.05); o2.stop(this.ctx.currentTime + i*0.05+0.2);
+            });
+            return;
+          }
+          if (type === 'good') { o.frequency.value = 660; g.gain.setValueAtTime(0.1, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.2); }
+          else if (type === 'ok') { o.frequency.value = 440; g.gain.setValueAtTime(0.08, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.15); }
+          else if (type === 'miss') { o.type='sawtooth'; o.frequency.setValueAtTime(200, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime+0.3); g.gain.setValueAtTime(0.15, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.3); }
+          o.start(); o.stop(this.ctx.currentTime+0.4);
+        } catch(e) {}
+      }
+    };
+
+    const $ = id => document.getElementById(id);
+
+    function setZoneSizes() {
+      const wrap = $('cxTargetWrap');
+      const s = wrap.offsetWidth || 280;
+      const scale = s / 280;
+      function setRing(el, r) {
+        el.style.width = (r*2*scale) + 'px';
+        el.style.height = (r*2*scale) + 'px';
+      }
+      setRing($('zOk'), OK_R);
+      setRing($('zGood'), GOOD_R);
+      setRing($('zPerfect'), PERFECT_R);
+    }
+
+    function startRound() {
+      G.round++;
+      G.ringSize = START_R;
+      const speed = 0.5 + Math.min(G.round * 0.12, 2.5);
+      const ring = $('cxRing');
+      const wrap = $('cxTargetWrap');
+      const scale = (wrap.offsetWidth || 280) / 280;
+
+      let lastTime = null;
+      function shrink(ts) {
+        if (!lastTime) lastTime = ts;
+        const dt = (ts - lastTime) / 16.67;
+        lastTime = ts;
+        G.ringSize -= speed * dt;
+
+        if (G.ringSize <= PERFECT_R - 8) {
+          // Missed - ring too small
+          SFX.play('miss');
+          ring.style.borderColor = '#ff4444';
+          G.streak = 0; G.missCount++;
+          $('cxFeedback').textContent = 'Too late! 😤';
+          $('cxFeedback').style.color = 'var(--red)';
+          updateStats();
+          if (G.missCount >= G.maxMiss) { setTimeout(() => showResult(), 400); return; }
+          setTimeout(() => {
+            ring.style.borderColor = 'var(--accent)';
+            $('cxFeedback').textContent = '';
+            startRound();
+          }, 600);
+          return;
+        }
+
+        ring.style.width = (G.ringSize * 2 * scale) + 'px';
+        ring.style.height = (G.ringSize * 2 * scale) + 'px';
+
+        // Color based on zone
+        if (G.ringSize <= PERFECT_R) ring.style.borderColor = '#00ff88';
+        else if (G.ringSize <= GOOD_R) ring.style.borderColor = '#ffcc00';
+        else ring.style.borderColor = 'var(--accent)';
+
+        G.animId = requestAnimationFrame(shrink);
+      }
+      G.animId = requestAnimationFrame(shrink);
+    }
+
+    function tapAction() {
+      if (G.state !== 'playing') return;
+      cancelAnimationFrame(G.animId);
+      SFX.init();
+
+      const r = G.ringSize;
+      G.total++;
+      let pts, label, color, sfx;
+
+      if (r <= PERFECT_R) {
+        pts = 10; label = '🔥 PERFECT!'; color = '#00ff88'; sfx = 'perfect';
+        G.streak++; G.hits++;
+      } else if (r <= GOOD_R) {
+        pts = 6; label = '⚡ GREAT!'; color = '#ffcc00'; sfx = 'good';
+        G.streak++; G.hits++;
+      } else if (r <= OK_R) {
+        pts = 3; label = '👍 GOOD'; color = 'var(--accent)'; sfx = 'ok';
+        G.streak++; G.hits++;
+      } else {
+        pts = 0; label = 'Too early! 😅'; color = 'var(--text2)'; sfx = 'miss';
+        G.streak = 0; G.missCount++;
+      }
+
+      if (G.streak > 0) pts *= Math.min(3, 1 + (G.streak - 1) * 0.3);
+      pts = Math.round(pts);
+      G.score += pts;
+      if (G.streak > G.bestStreak) G.bestStreak = G.streak;
+
+      SFX.play(sfx);
+
+      // Hit flash
+      const flash = $('hitFlash');
+      flash.style.background = color;
+      flash.style.animation = 'none';
+      flash.offsetHeight;
+      flash.style.animation = 'hitExpand 0.4s ease-out forwards';
+
+      $('cxFeedback').textContent = label + (pts > 0 ? ` +${pts}` : '');
+      $('cxFeedback').style.color = color;
+      $('cxScore').textContent = G.score;
+      updateStats();
+
+      if (G.missCount >= G.maxMiss) { setTimeout(() => showResult(), 400); return; }
+
+      // Update streak dots
+      const dots = $('cxStreak').querySelectorAll('.cx-streak-dot');
+      dots.forEach((d, i) => d.classList.toggle('active', i < (G.streak % 6)));
+
+      setTimeout(() => {
+        $('cxFeedback').textContent = '';
+        $('cxRing').style.borderColor = 'var(--accent)';
+        startRound();
+      }, 400);
+    }
+
+    function updateStats() {
+      $('scoreDisplay').textContent = G.score;
+      $('streakDisplay').textContent = G.streak + '🔥';
+      const acc = G.total > 0 ? Math.round((G.hits / G.total) * 100) : 0;
+      $('accDisplay').textContent = acc + '%';
+    }
+
+    function showResult() {
+      G.state = 'result';
+      cancelAnimationFrame(G.animId);
+      const isNew = G.score > G.best;
+      if (isNew) G.best = G.score;
+      Storage.set('clutch', { best: G.best });
+      $('bestDisplay').textContent = G.best;
+      $('cxFinalScore').textContent = G.score;
+      $('cxFinalStreak').textContent = G.bestStreak;
+      const acc = G.total > 0 ? Math.round((G.hits / G.total) * 100) : 0;
+      $('cxFinalAcc').textContent = acc + '%';
+
+      if (G.score >= 100) { $('cxResultEmoji').textContent = '🏆'; $('cxResultTitle').textContent = 'CLUTCH LEGEND!'; }
+      else if (G.score >= 50) { $('cxResultEmoji').textContent = '🔥'; $('cxResultTitle').textContent = 'CLUTCH MASTER!'; }
+      else if (G.score >= 20) { $('cxResultEmoji').textContent = '⚡'; $('cxResultTitle').textContent = 'CLUTCH PLAYER!'; }
+      else { $('cxResultEmoji').textContent = '💪'; $('cxResultTitle').textContent = 'KEEP TRAINING!'; }
+
+      $('cxResultMsg').textContent = isNew ? '🎉 New personal best!' : `Best: ${G.best} points`;
+      const pct = Math.min(99, Math.floor((G.score / 100) * 95) + 5);
+      $('cxCompare').textContent = `Better than ${pct}% players 😏`;
+      $('cxProgress').style.width = Math.min(100, G.score) + '%';
+
+      ['cxIdleCtrl','cxPlayCtrl'].forEach(id => $(id).classList.add('hidden'));
+      $('cxResultCtrl').classList.remove('hidden');
+      $('cxIdle').style.display = 'none';
+      $('cxPlaying').style.display = 'none';
+      $('cxResult').style.display = 'flex';
+    }
+
+    function startGame() {
+      SFX.init();
+      G.state = 'playing';
+      G.score = 0; G.streak = 0; G.bestStreak = 0;
+      G.hits = 0; G.total = 0; G.missCount = 0; G.round = 0;
+      setZoneSizes();
+      $('cxScore').textContent = '0';
+      $('cxFeedback').textContent = '';
+      $('cxIdle').style.display = 'none';
+      $('cxPlaying').style.display = 'flex';
+      $('cxResult').style.display = 'none';
+      $('cxIdleCtrl').classList.add('hidden');
+      $('cxPlayCtrl').classList.remove('hidden');
+      $('cxResultCtrl').classList.add('hidden');
+      updateStats();
+      setTimeout(() => startRound(), 300);
+    }
+
+    $('cxBtnStart').addEventListener('click', startGame);
+    $('cxBtnTap').addEventListener('click', tapAction);
+    $('cxTargetWrap').addEventListener('click', tapAction);
+    $('cxBtnRetry').addEventListener('click', () => {
+      if (window.shouldShowAd && shouldShowAd() && window.showAd) { showAd(startGame); return; }
+      startGame();
+    });
+    $('cxBtnHome').addEventListener('click', () => window.location.href = '/');
+    document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); if (G.state === 'idle') startGame(); else if (G.state === 'playing') tapAction(); } });
+
+    const saved = Storage.get('clutch') || {};
+    G.best = saved.best || 0;
+    $('bestDisplay').textContent = G.best;
+  </script>
+</body>
+</html>

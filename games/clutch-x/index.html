@@ -1,430 +1,928 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <meta name="theme-color" content="#05050a"/>
-  <title>Clutch X – Meri Kamai</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Teko:wght@400;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/assets/css/game-base.css"/>
-  <style>
-    .cx-target-wrap {
-      position: relative;
-      width: 280px; height: 280px;
-      margin: 0 auto;
-    }
-    .cx-outer-ring {
-      position: absolute;
-      border-radius: 50%;
-      border: 3px solid rgba(255,107,0,0.2);
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      transition: none;
-    }
-    .cx-zone {
-      position: absolute;
-      border-radius: 50%;
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      border: 2px solid rgba(255,255,255,0.1);
-    }
-    .cx-zone.perfect { border-color: rgba(0,255,136,0.5); background: rgba(0,255,136,0.05); }
-    .cx-zone.good { border-color: rgba(255,204,0,0.3); }
-    .cx-zone.ok { border-color: rgba(255,107,0,0.2); }
-    .cx-shrinking-ring {
-      position: absolute;
-      border-radius: 50%;
-      border: 4px solid var(--accent);
-      box-shadow: 0 0 20px rgba(255,107,0,0.6), inset 0 0 10px rgba(255,107,0,0.1);
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      transition: none;
-    }
-    .cx-center {
-      position: absolute;
-      border-radius: 50%;
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      background: radial-gradient(circle, #fff, var(--accent));
-      box-shadow: 0 0 20px var(--accent);
-      width: 24px; height: 24px;
-    }
-    .cx-score-big {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(52px, 13vw, 72px);
-      font-weight: 900;
-      color: var(--accent);
-      text-shadow: 0 0 30px rgba(255,107,0,0.6);
-      line-height: 1;
-    }
-    .cx-streak {
-      display: flex;
-      gap: 4px;
-      justify-content: center;
-    }
-    .cx-streak-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      transition: all 0.2s;
-    }
-    .cx-streak-dot.active {
-      background: var(--accent);
-      box-shadow: 0 0 6px var(--accent);
-    }
-    .accuracy-display {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-    }
-    .hit-flash {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0;
-    }
-    @keyframes hitExpand {
-      0% { width: 20px; height: 20px; opacity: 1; }
-      100% { width: 200px; height: 200px; opacity: 0; }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#000000"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Clutch X</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Teko:wght@600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{
+  width:100%;height:100%;overflow:hidden;background:#000;
+  font-family:'Rajdhani',system-ui,sans-serif;color:#fff;
+  touch-action:none;
+}
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+#app{
+  position:fixed;inset:0;z-index:1;
+  display:flex;flex-direction:column;align-items:center;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+}
+
+/* TICKER */
+#ticker{
+  width:100%;background:rgba(255,107,0,0.07);
+  border-bottom:1px solid rgba(255,107,0,0.12);
+  overflow:hidden;height:26px;display:flex;align-items:center;flex-shrink:0;
+}
+.ticker-track{
+  display:flex;gap:36px;white-space:nowrap;
+  animation:scrollTk 20s linear infinite;
+  font-size:10px;font-weight:700;color:rgba(255,140,50,0.85);letter-spacing:0.3px;
+  padding:0 10px;
+}
+@keyframes scrollTk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk-dot{display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:#00ff88;box-shadow:0 0 4px #00ff88;margin-right:5px;
+  animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* HEADER */
+#header{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;flex-shrink:0;
+}
+#backBtn{
+  color:rgba(255,255,255,0.35);font-size:12px;font-weight:700;
+  text-decoration:none;padding:5px 10px;
+  border:1px solid rgba(255,255,255,0.07);border-radius:8px;
+}
+.logo{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:900;letter-spacing:2px}
+.logo em{color:#ff6b00;font-style:normal}
+#bestWrap{text-align:right}
+.bl{font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase}
+#bestVal{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:900;color:#ff6b00}
+
+/* STATS */
+#statsRow{
+  width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;
+  background:rgba(255,255,255,0.018);
+  border-top:1px solid rgba(255,255,255,0.04);
+  border-bottom:1px solid rgba(255,255,255,0.04);flex-shrink:0;
+}
+.sc{display:flex;flex-direction:column;align-items:center;padding:5px 4px}
+.sc+.sc{border-left:1px solid rgba(255,255,255,0.04)}
+.sc-l{font-size:8px;color:rgba(255,255,255,0.28);letter-spacing:1.5px;text-transform:uppercase}
+.sc-v{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:900;color:#fff;margin-top:1px;transition:color 0.2s}
+
+/* MAIN */
+#gameArea{
+  flex:1;width:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  position:relative;min-height:0;overflow:hidden;
+}
+
+/* PSYCHO WORD */
+#pw{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',sans-serif;font-size:clamp(28px,9vw,46px);font-weight:900;
+  text-align:center;pointer-events:none;z-index:20;
+  opacity:0;letter-spacing:3px;text-shadow:0 0 40px currentColor;
+}
+@keyframes wordIn{
+  0%{opacity:0;transform:scale(0.3)}20%{opacity:1;transform:scale(1.08)}
+  35%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:scale(1.25)}
+}
+
+/* SCREENS */
+.screen{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;padding:16px;
+  text-align:center;opacity:0;pointer-events:none;transition:opacity 0.25s;z-index:2;
+}
+.screen.on{opacity:1;pointer-events:all}
+
+/* IDLE */
+.idle-icon{font-size:58px;filter:drop-shadow(0 0 18px #ff6b00)}
+@keyframes iP{0%,100%{transform:scale(1)}50%{transform:scale(1.1) rotate(4deg)}}
+.idle-title{
+  font-family:'Teko',sans-serif;font-size:clamp(30px,8vw,44px);font-weight:700;
+  color:#ff6b00;letter-spacing:2px;line-height:1;
+  text-shadow:0 0 25px rgba(255,107,0,0.45);
+}
+.idle-sub{font-size:13px;color:rgba(255,255,255,0.45);line-height:1.65;max-width:250px}
+.idle-sub b{color:#fbbf24}
+.idle-hint{
+  font-size:11px;color:rgba(255,255,255,0.2);
+  border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:5px 14px;letter-spacing:1px;
+}
+.idle-live{display:flex;gap:20px}
+.il-i{display:flex;flex-direction:column;align-items:center;gap:2px}
+.il-n{font-family:'Orbitron',sans-serif;font-size:19px;font-weight:900;color:#ff6b00}
+.il-l{font-size:9px;color:rgba(255,255,255,0.28);letter-spacing:1px;text-transform:uppercase}
+
+/* PLAY SCREEN (score + streak only) */
+#playScreen{justify-content:flex-start;padding-top:10px;gap:6px}
+#cxScore{
+  font-family:'Orbitron',sans-serif;font-size:clamp(44px,12vw,62px);
+  font-weight:900;color:#ff6b00;
+  text-shadow:0 0 25px rgba(255,107,0,0.55);line-height:1;
+  transition:transform 0.15s,color 0.15s;
+}
+.streaks{display:flex;gap:5px}
+.sd{
+  width:10px;height:10px;border-radius:50%;
+  background:rgba(255,255,255,0.08);transition:all 0.18s;
+}
+
+/* ARENA */
+#arena{
+  position:absolute;z-index:5;
+  width:min(76vw,310px);height:min(76vw,310px);
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.zr{position:absolute;border-radius:50%;border:2px solid;top:50%;left:50%;transform:translate(-50%,-50%)}
+#zOk{border-color:rgba(255,107,0,0.12);width:90%;height:90%}
+#zGood{border-color:rgba(255,204,0,0.18);width:62%;height:62%}
+#zPerfect{
+  border-color:rgba(0,255,136,0.3);width:38%;height:38%;
+  background:rgba(0,255,136,0.03);
+  box-shadow:0 0 18px rgba(0,255,136,0.08),inset 0 0 12px rgba(0,255,136,0.04);
+}
+#ringEl{
+  position:absolute;border-radius:50%;border:5px solid #ff6b00;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  box-shadow:0 0 22px rgba(255,107,0,0.65),0 0 55px rgba(255,107,0,0.18);
+  pointer-events:none;transition:border-color 0.05s;
+}
+#centerDot{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:18px;height:18px;border-radius:50%;z-index:6;
+  background:radial-gradient(circle at 35% 30%,#fff,#ff6b00);
+  box-shadow:0 0 18px #ff6b00,0 0 36px rgba(255,107,0,0.35);
+}
+.ob{
+  position:absolute;width:7px;height:7px;border-radius:50%;
+  background:rgba(255,107,0,0.45);box-shadow:0 0 7px #ff6b00;
+  top:50%;left:50%;transform-origin:0 0;pointer-events:none;
+}
+#hitFlash{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  border-radius:50%;pointer-events:none;width:18px;height:18px;opacity:0;
+}
+@keyframes fOut{
+  0%{width:18px;height:18px;opacity:0.85}
+  100%{width:340px;height:340px;opacity:0}
+}
+
+/* FEEDBACK */
+#feedback{
+  font-family:'Teko',sans-serif;font-size:clamp(24px,6.5vw,34px);font-weight:700;
+  text-align:center;min-height:40px;letter-spacing:1px;
+  text-shadow:0 0 18px currentColor;transition:color 0.08s;
+  position:absolute;bottom:8px;z-index:8;
+}
+
+/* RESULT */
+#resultScreen{gap:10px}
+.rs-emoji{font-size:48px;line-height:1}
+.rs-score{
+  font-family:'Orbitron',sans-serif;font-size:clamp(48px,13vw,66px);
+  font-weight:900;line-height:1;
+  transition:all 0.3s;
+}
+.rs-title{font-family:'Teko',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:700;letter-spacing:1px}
+.rs-pct{
+  font-size:14px;font-weight:700;color:#a855f7;
+  background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.18);
+  border-radius:16px;padding:8px 18px;letter-spacing:0.3px;line-height:1.55;
+}
+.rs-pct strong{color:#fff;font-family:'Orbitron',sans-serif;font-size:17px}
+.rs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:270px}
+.rg{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.05);
+  border-radius:10px;padding:9px;
+}
+.rg-l{font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.rg-v{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900}
+.rs-msg{font-size:12px;color:rgba(255,255,255,0.38);line-height:1.5;max-width:250px}
+@keyframes rsIn{
+  0%{opacity:0;transform:scale(0.82) translateY(18px)}
+  60%{transform:scale(1.03) translateY(-3px)}100%{opacity:1;transform:scale(1)}
+}
+
+/* BOTTOM */
+#bottomArea{
+  width:100%;flex-shrink:0;
+  padding:8px 14px 10px;
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+}
+.gbtn{
+  width:100%;max-width:340px;border:none;border-radius:18px;
+  font-family:'Teko',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;
+  padding:16px;cursor:pointer;transition:transform 0.1s;
+}
+.gbtn:active{transform:scale(0.95)}
+#startBtn{
+  background:linear-gradient(135deg,#ff6b00,#ff9500);color:#000;
+  box-shadow:0 0 36px rgba(255,107,0,0.45);
+  animation:sp 1.8s ease-in-out infinite;
+}
+@keyframes sp{0%,100%{box-shadow:0 0 36px rgba(255,107,0,0.45)}50%{box-shadow:0 0 65px rgba(255,107,0,0.8)}}
+#tapBtn{display:none;background:linear-gradient(135deg,#ff6b00,#ff9500);color:#000;box-shadow:0 0 36px rgba(255,107,0,0.45)}
+#retryBtn{display:none;background:linear-gradient(135deg,#ff6b00,#ff9500);color:#000;box-shadow:0 0 30px rgba(255,107,0,0.4)}
+#homeBtn{
+  display:none;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  color:rgba(255,255,255,0.35);font-family:'Rajdhani',sans-serif;
+  font-size:13px;font-weight:700;padding:9px 22px;cursor:pointer;border-radius:10px;
+}
+
+/* PROGRESS */
+#pgWrap{width:100%;max-width:340px}
+#pgLabel{font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+#pgBar{height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden}
+#pgFill{height:100%;background:linear-gradient(90deg,#ff6b00,#ff9500);border-radius:2px;width:0%;transition:width 0.5s}
+
+/* AD OVERLAY */
+#adOv{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,0.96);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  padding:20px;
+}
+#adOv.show{display:flex}
+.ad-tag{font-size:8px;color:rgba(255,255,255,0.18);letter-spacing:3px;text-transform:uppercase}
+.ad-box{
+  width:100%;max-width:320px;
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;padding:18px;text-align:center;min-height:250px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+}
+/* ---- PASTE YOUR ADSENSE CODE INSIDE .ad-box ---- */
+.ad-ph{font-size:11px;color:rgba(255,255,255,0.15);letter-spacing:2px}
+.ad-ph2{font-size:10px;color:rgba(255,255,255,0.08)}
+.ad-pg-bar{width:100%;max-width:320px;height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden}
+.ad-pg-fill{height:100%;background:#ff6b00;border-radius:2px;transition:width 0.1s linear;width:0%}
+#adCloseBtn{
+  background:#ff6b00;color:#000;border:none;
+  font-family:'Teko',sans-serif;font-size:18px;font-weight:700;
+  padding:11px 30px;border-radius:36px;cursor:pointer;min-width:200px;letter-spacing:1px;
+}
+#adCloseBtn:disabled{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.25);cursor:not-allowed}
+
+/* SCREEN FLASH */
+#sFlash{position:fixed;inset:0;z-index:500;pointer-events:none;opacity:0}
+
+/* HYPNO BG RINGS */
+#bgRings{position:fixed;inset:0;pointer-events:none;z-index:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.bgr{position:absolute;border-radius:50%;border:1px solid rgba(255,107,0,0.05);animation:bgSp linear infinite}
+@keyframes bgSp{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes bgSpR{from{transform:rotate(360deg)}to{transform:rotate(0deg)}}
+</style>
 </head>
 <body>
-  <div class="game-container">
-    <div class="game-header">
-      <a href="/" class="back-btn">← Home</a>
-      <div class="game-title-wrap">
-        <span class="game-emoji">⚡</span>
-        <span class="game-name">Clutch X</span>
+
+<!-- Hypno rings -->
+<div id="bgRings">
+  <div class="bgr" style="width:130vw;height:130vw;animation-duration:45s"></div>
+  <div class="bgr" style="width:95vw;height:95vw;animation-duration:30s;animation-name:bgSpR;border-color:rgba(255,107,0,0.06)"></div>
+  <div class="bgr" style="width:66vw;height:66vw;animation-duration:19s;border-color:rgba(168,85,247,0.05)"></div>
+  <div class="bgr" style="width:40vw;height:40vw;animation-duration:11s;animation-name:bgSpR;border-color:rgba(0,212,255,0.04)"></div>
+</div>
+
+<canvas id="bgCanvas"></canvas>
+<div id="sFlash"></div>
+<div id="pw"></div>
+
+<!-- AD OVERLAY -->
+<div id="adOv">
+  <div class="ad-tag">ADVERTISEMENT</div>
+  <div class="ad-box">
+    <!-- ====== PASTE GOOGLE ADSENSE CODE HERE ====== -->
+    <div class="ad-ph">ADVERTISEMENT</div>
+    <div class="ad-ph2">Google AdSense</div>
+    <!-- ============================================ -->
+  </div>
+  <div class="ad-pg-bar"><div class="ad-pg-fill" id="adPgFill"></div></div>
+  <button id="adCloseBtn" disabled>Wait <span id="adCd">5</span>s...</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- Ticker -->
+  <div id="ticker"><div class="ticker-track" id="tkTrack"></div></div>
+
+  <!-- Header -->
+  <div id="header">
+    <a href="/" id="backBtn">← Back</a>
+    <div class="logo">CLUTCH<em>X</em></div>
+    <div id="bestWrap"><div class="bl">BEST</div><div id="bestVal">0</div></div>
+  </div>
+
+  <!-- Stats -->
+  <div id="statsRow">
+    <div class="sc"><span class="sc-l">SCORE</span><span class="sc-v" id="scoreV">0</span></div>
+    <div class="sc"><span class="sc-l">STREAK</span><span class="sc-v" id="streakV">0🔥</span></div>
+    <div class="sc"><span class="sc-l">ACC</span><span class="sc-v" id="accV">—</span></div>
+  </div>
+
+  <!-- Game Area -->
+  <div id="gameArea">
+
+    <!-- IDLE -->
+    <div class="screen on" id="idleScreen">
+      <div class="idle-icon" style="animation:iP 2s ease-in-out infinite">⚡</div>
+      <div class="idle-title">LAST SECOND<br/>HERO</div>
+      <div class="idle-sub">
+        Ring shrink hoti hai…<br/>
+        <b>Perfect zone</b> mein tap karo.<br/>
+        Jitna wait karo — utna zyada score!
       </div>
-      <div class="header-score">
-        <span class="hs-label">Best</span>
-        <span class="hs-val" id="bestDisplay">0</span>
+      <div class="idle-live">
+        <div class="il-i"><div class="il-n" id="idleLive">412</div><div class="il-l">Playing Now</div></div>
+        <div class="il-i"><div class="il-n" style="color:#a855f7">1%</div><div class="il-l">Your Goal</div></div>
+      </div>
+      <div class="idle-hint">TAP ANYWHERE TO BEGIN</div>
+    </div>
+
+    <!-- PLAY SCREEN (score + streak shown above arena) -->
+    <div class="screen" id="playScreen">
+      <div id="cxScore">0</div>
+      <div class="streaks" id="cxStreak">
+        <div class="sd"></div><div class="sd"></div><div class="sd"></div>
+        <div class="sd"></div><div class="sd"></div>
       </div>
     </div>
 
-    <div class="stats-bar">
-      <div class="stat-item">
-        <span class="si-label">Score</span>
-        <span class="si-val" id="scoreDisplay">0</span>
+    <!-- RESULT -->
+    <div class="screen" id="resultScreen">
+      <div class="rs-emoji" id="rsEmoji">⚡</div>
+      <div class="rs-score" id="rsScore">0</div>
+      <div class="rs-title" id="rsTitle">CLUTCH!</div>
+      <div class="rs-pct" id="rsPct">
+        Tum sirf <strong id="rsPctNum">—</strong>% logon se behtar ho<br/>
+        <span style="font-size:11px;color:rgba(255,255,255,0.3)">Top 1% ban sakte ho — ek aur round! 🔥</span>
       </div>
-      <div class="stat-item">
-        <span class="si-label">Streak</span>
-        <span class="si-val" id="streakDisplay">0🔥</span>
+      <div class="rs-grid">
+        <div class="rg"><div class="rg-l">STREAK</div><div class="rg-v" id="rsFStr" style="color:#ff6b00">0</div></div>
+        <div class="rg"><div class="rg-l">ACCURACY</div><div class="rg-v" id="rsFAcc" style="color:#00ff88">—</div></div>
+        <div class="rg"><div class="rg-l">TOP %</div><div class="rg-v" id="rsFTop" style="color:#a855f7">—</div></div>
+        <div class="rg"><div class="rg-l">ROUNDS</div><div class="rg-v" id="rsFRnd" style="color:#00d4ff">0</div></div>
       </div>
-      <div class="stat-item">
-        <span class="si-label">Accuracy</span>
-        <span class="si-val accuracy-display" id="accDisplay">—</span>
-      </div>
+      <div class="rs-msg" id="rsMsg"></div>
     </div>
 
-    <div class="game-area" style="gap:10px">
-
-      <!-- IDLE -->
-      <div id="cxIdle" style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:20px">
-        <div style="font-size:60px;animation:pulse 1s infinite">⚡</div>
-        <div style="font-family:'Teko',sans-serif;font-size:32px;color:var(--accent)">LAST SECOND HERO</div>
-        <div style="font-size:13px;color:var(--text2);line-height:1.6;max-width:280px">
-          Ring shrink ho rahi hai…<br/>
-          Bilkul sahi time pe TAP karo!<br/>
-          Perfect zone me aana = maximum points!
-        </div>
-      </div>
-
-      <!-- PLAYING -->
-      <div id="cxPlaying" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%">
-        <div class="cx-score-big" id="cxScore">0</div>
-        <div class="cx-streak" id="cxStreak">
-          <div class="cx-streak-dot"></div>
-          <div class="cx-streak-dot"></div>
-          <div class="cx-streak-dot"></div>
-          <div class="cx-streak-dot"></div>
-          <div class="cx-streak-dot"></div>
-        </div>
-
-        <div class="cx-target-wrap" id="cxTargetWrap">
-          <!-- Zone rings -->
-          <div class="cx-zone ok" id="zOk"></div>
-          <div class="cx-zone good" id="zGood"></div>
-          <div class="cx-zone perfect" id="zPerfect"></div>
-          <!-- Shrinking ring -->
-          <div class="cx-shrinking-ring" id="cxRing"></div>
-          <!-- Center -->
-          <div class="cx-center"></div>
-          <!-- Hit flash -->
-          <div class="hit-flash" id="hitFlash"></div>
-        </div>
-
-        <div class="feedback-msg" id="cxFeedback" style="font-size:20px;min-height:28px"></div>
-      </div>
-
-      <!-- RESULT -->
-      <div id="cxResult" style="display:none;flex-direction:column;align-items:center;gap:12px;text-align:center;width:100%">
-        <div style="font-size:50px" id="cxResultEmoji">⚡</div>
-        <div style="font-family:'Orbitron',sans-serif;font-size:52px;font-weight:900;color:var(--accent)" id="cxFinalScore">0</div>
-        <div style="font-family:'Teko',sans-serif;font-size:24px" id="cxResultTitle">CLUTCH!</div>
-        <div style="font-size:14px;color:var(--text2)" id="cxResultMsg"></div>
-        <div class="result-card" style="max-width:280px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
-            <div><div style="color:var(--text2);font-size:10px;letter-spacing:1px">BEST STREAK</div><div style="font-family:'Orbitron',sans-serif;font-size:20px;color:var(--accent)" id="cxFinalStreak">0</div></div>
-            <div><div style="color:var(--text2);font-size:10px;letter-spacing:1px">ACCURACY</div><div style="font-family:'Orbitron',sans-serif;font-size:20px;color:var(--green)" id="cxFinalAcc">—</div></div>
-          </div>
-          <div style="font-size:12px;color:var(--purple);margin-top:8px" id="cxCompare">—</div>
-        </div>
-      </div>
+    <!-- ARENA (always in DOM, z-index based) -->
+    <div id="arena">
+      <div class="zr" id="zOk"></div>
+      <div class="zr" id="zGood"></div>
+      <div class="zr" id="zPerfect"></div>
+      <div id="ringEl"></div>
+      <div id="centerDot"></div>
+      <div class="ob" id="ob1"></div>
+      <div class="ob" id="ob2"></div>
+      <div id="hitFlash"></div>
     </div>
 
-    <div class="controls-area">
-      <div class="ctrl-state" id="cxIdleCtrl">
-        <button class="btn-game-primary" id="cxBtnStart">⚡ START</button>
-      </div>
-      <div class="ctrl-state hidden" id="cxPlayCtrl">
-        <button class="btn-game-stop" id="cxBtnTap">⚡ TAP NOW!</button>
-      </div>
-      <div class="ctrl-state hidden" id="cxResultCtrl">
-        <button class="btn-game-primary" id="cxBtnRetry">🔄 RETRY</button>
-        <button class="btn-game-secondary" id="cxBtnHome">🏠 Home</button>
-      </div>
-    </div>
+    <div id="feedback"></div>
 
-    <div class="progress-section">
-      <div class="ps-label">Clutch Master Progress</div>
-      <div class="ps-bar"><div class="ps-fill" id="cxProgress" style="width:0%"></div></div>
+  </div>
+
+  <!-- Bottom -->
+  <div id="bottomArea">
+    <button class="gbtn" id="startBtn">⚡ TAP TO START</button>
+    <button class="gbtn" id="tapBtn">⚡ TAP!</button>
+    <button class="gbtn" id="retryBtn">🔄 PLAY AGAIN</button>
+    <button id="homeBtn">🏠 Home</button>
+    <div id="pgWrap">
+      <div id="pgLabel">PROGRESS TO TOP 1%</div>
+      <div id="pgBar"><div id="pgFill"></div></div>
     </div>
   </div>
 
-  <script src="/common/storage.js"></script>
-  <script>
-    const G = {
-      state: 'idle',
-      score: 0,
-      best: 0,
-      streak: 0,
-      bestStreak: 0,
-      hits: 0,
-      total: 0,
-      ringSize: 0,
-      ringTarget: 30,
-      animId: null,
-      missCount: 0,
-      maxMiss: 3,
-      round: 0,
-    };
+</div>
 
-    const PERFECT_R = 36; const GOOD_R = 60; const OK_R = 90;
-    const START_R = 130;
+<script>
+// ================================================================
+//  CLUTCH X — ULTRA HYPNOTIC EDITION — MERI KAMAI
+// ================================================================
 
-    const SFX = {
-      ctx: null,
-      init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-      play(type) {
-        try {
-          this.init();
-          const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
-          o.connect(g); g.connect(this.ctx.destination);
-          if (type === 'perfect') {
-            [880, 1047, 1319].forEach((f, i) => {
-              const o2 = this.ctx.createOscillator(); const g2 = this.ctx.createGain();
-              o2.connect(g2); g2.connect(this.ctx.destination);
-              o2.frequency.value = f;
-              g2.gain.setValueAtTime(0.1, this.ctx.currentTime + i*0.05);
-              g2.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i*0.05+0.15);
-              o2.start(this.ctx.currentTime + i*0.05); o2.stop(this.ctx.currentTime + i*0.05+0.2);
-            });
-            return;
-          }
-          if (type === 'good') { o.frequency.value = 660; g.gain.setValueAtTime(0.1, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.2); }
-          else if (type === 'ok') { o.frequency.value = 440; g.gain.setValueAtTime(0.08, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.15); }
-          else if (type === 'miss') { o.type='sawtooth'; o.frequency.setValueAtTime(200, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime+0.3); g.gain.setValueAtTime(0.15, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.3); }
-          o.start(); o.stop(this.ctx.currentTime+0.4);
-        } catch(e) {}
-      }
-    };
+// ---- Storage ----
+const S={
+  get(k){try{return JSON.parse(localStorage.getItem('cx_'+k))}catch(e){return null}},
+  set(k,v){try{localStorage.setItem('cx_'+k,JSON.stringify(v))}catch(e){}}
+};
 
-    const $ = id => document.getElementById(id);
+// ---- State ----
+const G={
+  state:'idle',
+  score:0,best:0,streak:0,bestStreak:0,
+  hits:0,total:0,missCount:0,maxMiss:3,round:0,
+  ringSize:0,animId:null,lastAdTime:0,sessionStart:0,
+};
+const PERFECT_R=36,GOOD_R=60,OK_R=90,START_R=130;
 
-    function setZoneSizes() {
-      const wrap = $('cxTargetWrap');
-      const s = wrap.offsetWidth || 280;
-      const scale = s / 280;
-      function setRing(el, r) {
-        el.style.width = (r*2*scale) + 'px';
-        el.style.height = (r*2*scale) + 'px';
-      }
-      setRing($('zOk'), OK_R);
-      setRing($('zGood'), GOOD_R);
-      setRing($('zPerfect'), PERFECT_R);
+// ---- DOM ----
+const $=id=>document.getElementById(id);
+const bgC=$('bgCanvas'),bgX=bgC.getContext('2d');
+
+// ---- Resize ----
+function resize(){
+  bgC.width=innerWidth; bgC.height=innerHeight;
+  setZones();
+}
+window.addEventListener('resize',resize);
+
+// ================================================================
+//  BACKGROUND: PARTICLES
+// ================================================================
+const parts=[];
+(function initP(){
+  for(let i=0;i<90;i++) parts.push({
+    x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+    vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
+    r:Math.random()*1.3+.35, a:Math.random()*.38+.06,
+    c:['#ff6b00','#a855f7','#00d4ff','#ff6b00','#ff9500'][Math.floor(Math.random()*5)]
+  });
+})();
+
+let bgF=0;
+function drawBG(){
+  const W=bgC.width,H=bgC.height;
+  bgX.clearRect(0,0,W,H);
+  const vg=bgX.createRadialGradient(W/2,H/2,H*.15,W/2,H/2,H*.85);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.72)');
+  bgX.fillStyle=vg; bgX.fillRect(0,0,W,H);
+
+  parts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+    if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    bgX.save(); bgX.globalAlpha=p.a;
+    bgX.fillStyle=p.c; bgX.shadowColor=p.c; bgX.shadowBlur=5;
+    bgX.beginPath(); bgX.arc(p.x,p.y,p.r,0,Math.PI*2); bgX.fill();
+    bgX.restore();
+  });
+  for(let i=0;i<parts.length;i++) for(let j=i+1;j<parts.length;j++){
+    const dx=parts[i].x-parts[j].x,dy=parts[i].y-parts[j].y,d=Math.hypot(dx,dy);
+    if(d<85){
+      bgX.save(); bgX.globalAlpha=(1-d/85)*.06;
+      bgX.strokeStyle='#ff6b00'; bgX.lineWidth=.5;
+      bgX.beginPath(); bgX.moveTo(parts[i].x,parts[i].y); bgX.lineTo(parts[j].x,parts[j].y); bgX.stroke();
+      bgX.restore();
     }
+  }
+  bgF++; requestAnimationFrame(drawBG);
+}
+drawBG();
 
-    function startRound() {
-      G.round++;
-      G.ringSize = START_R;
-      const speed = 0.5 + Math.min(G.round * 0.12, 2.5);
-      const ring = $('cxRing');
-      const wrap = $('cxTargetWrap');
-      const scale = (wrap.offsetWidth || 280) / 280;
+// ================================================================
+//  AUDIO ENGINE — HYPNOTIC MUSIC + SFX
+// ================================================================
+let aC=null;
+function audio(){
+  if(!aC) aC=new(window.AudioContext||window.webkitAudioContext)();
+  if(aC.state==='suspended') aC.resume();
+  return aC;
+}
 
-      let lastTime = null;
-      function shrink(ts) {
-        if (!lastTime) lastTime = ts;
-        const dt = (ts - lastTime) / 16.67;
-        lastTime = ts;
-        G.ringSize -= speed * dt;
+let bgMusicNodes=[];
+function startMusic(){
+  if(bgMusicNodes.length) return;
+  const ac=audio();
+  // Bass drone
+  const bass=ac.createOscillator(),bg=ac.createGain();
+  bass.type='sine'; bass.frequency.value=55; bg.gain.value=.055;
+  bass.connect(bg); bg.connect(ac.destination); bass.start();
+  // Bass LFO throb
+  const lfo=ac.createOscillator(),lg=ac.createGain();
+  lfo.frequency.value=1.1; lg.gain.value=.04;
+  lfo.connect(lg); lg.connect(bg.gain); lfo.start();
+  // Pad layers
+  [[110,.015,'sine'],[165,.012,'triangle'],[220,.01,'sine'],[330,.008,'triangle'],[440,.006,'sine']].forEach(([f,vol,type],i)=>{
+    const o=ac.createOscillator(),g=ac.createGain(),p=ac.createStereoPanner();
+    o.type=type; o.frequency.value=f+(Math.random()-.5)*3;
+    g.gain.value=vol;
+    const pl=ac.createOscillator(),plg=ac.createGain();
+    pl.frequency.value=.06+i*.025; plg.gain.value=.9;
+    pl.connect(plg); plg.connect(p.pan); pl.start();
+    o.connect(p); p.connect(g); g.connect(ac.destination); o.start();
+    bgMusicNodes.push(o,g,p,pl,plg);
+  });
+  // Shimmer
+  const sh=ac.createOscillator(),sg=ac.createGain();
+  sh.frequency.value=990; sg.gain.value=.007;
+  sh.connect(sg); sg.connect(ac.destination); sh.start();
+  bgMusicNodes.push(bass,bg,lfo,lg,sh,sg);
+}
+function stopMusic(){
+  bgMusicNodes.forEach(n=>{try{n.stop&&n.stop();n.disconnect&&n.disconnect()}catch(e){}});
+  bgMusicNodes=[];
+}
 
-        if (G.ringSize <= PERFECT_R - 8) {
-          // Missed - ring too small
-          SFX.play('miss');
-          ring.style.borderColor = '#ff4444';
-          G.streak = 0; G.missCount++;
-          $('cxFeedback').textContent = 'Too late! 😤';
-          $('cxFeedback').style.color = 'var(--red)';
-          updateStats();
-          if (G.missCount >= G.maxMiss) { setTimeout(() => showResult(), 400); return; }
-          setTimeout(() => {
-            ring.style.borderColor = 'var(--accent)';
-            $('cxFeedback').textContent = '';
-            startRound();
-          }, 600);
-          return;
-        }
-
-        ring.style.width = (G.ringSize * 2 * scale) + 'px';
-        ring.style.height = (G.ringSize * 2 * scale) + 'px';
-
-        // Color based on zone
-        if (G.ringSize <= PERFECT_R) ring.style.borderColor = '#00ff88';
-        else if (G.ringSize <= GOOD_R) ring.style.borderColor = '#ffcc00';
-        else ring.style.borderColor = 'var(--accent)';
-
-        G.animId = requestAnimationFrame(shrink);
-      }
-      G.animId = requestAnimationFrame(shrink);
+function sfx(type){
+  try{
+    const ac=audio();
+    if(type==='perfect'){
+      [523,659,784,1047,1319].forEach((f,i)=>{
+        const o=ac.createOscillator(),g=ac.createGain();
+        o.frequency.value=f; o.type='sine';
+        g.gain.setValueAtTime(0,ac.currentTime+i*.04);
+        g.gain.linearRampToValueAtTime(.11,ac.currentTime+i*.04+.02);
+        g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+i*.04+.28);
+        o.connect(g); g.connect(ac.destination);
+        o.start(ac.currentTime+i*.04); o.stop(ac.currentTime+i*.04+.3);
+      });
+      const sub=ac.createOscillator(),sg=ac.createGain();
+      sub.type='sine'; sub.frequency.setValueAtTime(80,ac.currentTime);
+      sub.frequency.exponentialRampToValueAtTime(38,ac.currentTime+.22);
+      sg.gain.setValueAtTime(.22,ac.currentTime); sg.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.28);
+      sub.connect(sg); sg.connect(ac.destination); sub.start(); sub.stop(ac.currentTime+.3);
+    } else if(type==='good'){
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.frequency.setValueAtTime(660,ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(900,ac.currentTime+.12);
+      g.gain.setValueAtTime(.1,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.2);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+.22);
+    } else if(type==='ok'){
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.frequency.value=440;
+      g.gain.setValueAtTime(.07,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.15);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+.17);
+    } else if(type==='miss'){
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.type='sawtooth';
+      o.frequency.setValueAtTime(230,ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(75,ac.currentTime+.32);
+      g.gain.setValueAtTime(.14,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.36);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+.38);
+    } else if(type==='warn'){
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.frequency.value=1200; o.type='sine';
+      g.gain.setValueAtTime(.025,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.07);
+      o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+.08);
     }
+  }catch(e){}
+}
 
-    function tapAction() {
-      if (G.state !== 'playing') return;
-      cancelAnimationFrame(G.animId);
-      SFX.init();
+// ================================================================
+//  SCREEN FLASH
+// ================================================================
+function flash(color='#ff6b00',dur=220){
+  const f=$('sFlash');
+  f.style.transition='none'; f.style.background=color; f.style.opacity='.3';
+  setTimeout(()=>{ f.style.transition=`opacity ${dur}ms ease`; f.style.opacity='0'; },30);
+}
 
-      const r = G.ringSize;
-      G.total++;
-      let pts, label, color, sfx;
+// ================================================================
+//  PSYCHO WORDS
+// ================================================================
+const PLAY_WORDS=[
+  'FOCUS!','NOW!','WAIT...','PERFECT!','CLUTCH!','⚡','🔥','HOLD...','ALMOST!','PATIENCE','GO!',
+];
+const HYPE_WORDS=[
+  'TU KAR SAKTA HAI! 💪','1% BANN JA! 🔥','LEGEND BAN!',
+  'DIMAAG LAGA!','AB NAHI TO KAB?','FOCUS KARO!',
+  'GIVE UP MAT!','THIS IS IT! 🎯','NEXT LEVEL! ⚡','STRONG MIND! 🧠',
+];
+const COLORS=['#ff6b00','#fbbf24','#00d4ff','#a855f7','#00ff88','#ff3399'];
+let wTimer=null;
+function showWord(txt,col){
+  const el=$('pw');
+  el.textContent=txt; el.style.color=col;
+  el.style.animation='none'; el.offsetHeight;
+  el.style.animation='wordIn 2s ease-in-out forwards';
+}
+function startWords(){
+  stopWords();
+  let i=0;
+  function nx(){
+    if(G.state!=='playing') return;
+    const pool=i%4===0?HYPE_WORDS:PLAY_WORDS;
+    showWord(pool[Math.floor(Math.random()*pool.length)], COLORS[Math.floor(Math.random()*COLORS.length)]);
+    i++;
+    wTimer=setTimeout(nx, 4500+Math.random()*5500);
+  }
+  wTimer=setTimeout(nx,3200);
+}
+function stopWords(){
+  if(wTimer){clearTimeout(wTimer);wTimer=null;}
+  $('pw').style.animation='none'; $('pw').style.opacity='0';
+}
 
-      if (r <= PERFECT_R) {
-        pts = 10; label = '🔥 PERFECT!'; color = '#00ff88'; sfx = 'perfect';
-        G.streak++; G.hits++;
-      } else if (r <= GOOD_R) {
-        pts = 6; label = '⚡ GREAT!'; color = '#ffcc00'; sfx = 'good';
-        G.streak++; G.hits++;
-      } else if (r <= OK_R) {
-        pts = 3; label = '👍 GOOD'; color = 'var(--accent)'; sfx = 'ok';
-        G.streak++; G.hits++;
-      } else {
-        pts = 0; label = 'Too early! 😅'; color = 'var(--text2)'; sfx = 'miss';
-        G.streak = 0; G.missCount++;
-      }
+// ================================================================
+//  FAKE PLAYERS TICKER
+// ================================================================
+const NAMES=['Rahul K.','Priya S.','Aman V.','Deepak M.','Sneha R.','Vikram T.',
+  'Ankita J.','Rohit P.','Kavya L.','Arjun D.','Meera K.','Yash G.','Pooja N.',
+  'Karan M.','Riya B.','Shiv P.','Aditya R.','Tanya M.'];
+const ACTS=['scored 94!','got PERFECT 🔥','hit TOP 1%! 👑','got 12x streak!',
+  'scored 128!','is on fire! ⚡','beat their best!','got 97% accuracy!',
+  'just played!','scored 76!','reached 1% Club! 🏆'];
+function buildTicker(){
+  let html='';
+  for(let i=0;i<22;i++){
+    const n=NAMES[Math.floor(Math.random()*NAMES.length)];
+    const a=ACTS[Math.floor(Math.random()*ACTS.length)];
+    html+=`<span><span class="tk-dot"></span>${n} ${a}</span>`;
+  }
+  $('tkTrack').innerHTML=html+html; // double for seamless
+  $('idleLive').textContent=380+Math.floor(Math.random()*90)+'';
+}
+buildTicker();
+setInterval(buildTicker,22000);
+setInterval(()=>{ $('idleLive').textContent=380+Math.floor(Math.random()*90)+''; },5000);
 
-      if (G.streak > 0) pts *= Math.min(3, 1 + (G.streak - 1) * 0.3);
-      pts = Math.round(pts);
-      G.score += pts;
-      if (G.streak > G.bestStreak) G.bestStreak = G.streak;
+// ================================================================
+//  ZONE SIZES
+// ================================================================
+function setZones(){
+  const a=$('arena'), s=a.offsetWidth||300, sc=s/280;
+  function sz(id,r){const e=$(id);e.style.width=r*2*sc+'px';e.style.height=r*2*sc+'px';}
+  sz('zOk',OK_R); sz('zGood',GOOD_R); sz('zPerfect',PERFECT_R);
+}
 
-      SFX.play(sfx);
+// Orbit dots
+let oa=0;
+function animOrbit(){
+  oa+=.022;
+  const a=$('arena'),s=(a.offsetWidth||300)/2;
+  const r1=s*.7,r2=s*.56;
+  const o1=$('ob1'),o2=$('ob2');
+  if(o1){o1.style.left=(s+Math.cos(oa)*r1-3.5)+'px';o1.style.top=(s+Math.sin(oa)*r1-3.5)+'px';}
+  if(o2){o2.style.left=(s+Math.cos(oa+Math.PI)*r2-3.5)+'px';o2.style.top=(s+Math.sin(oa+Math.PI)*r2-3.5)+'px';}
+  requestAnimationFrame(animOrbit);
+}
+animOrbit();
 
-      // Hit flash
-      const flash = $('hitFlash');
-      flash.style.background = color;
-      flash.style.animation = 'none';
-      flash.offsetHeight;
-      flash.style.animation = 'hitExpand 0.4s ease-out forwards';
+// ================================================================
+//  AD SYSTEM
+// ================================================================
+let adBusy=false;
+function showAd(secs,cb){
+  if(adBusy){if(cb)cb();return;}
+  adBusy=true;
+  const ov=$('adOv'),btn=$('adCloseBtn'),pf=$('adPgFill'),cd=$('adCd');
+  ov.classList.add('show');
+  btn.disabled=true; btn.innerHTML=`Wait <span id="adCd">${secs}</span>s...`;
+  pf.style.width='0%';
+  let t=secs;
+  const iv=setInterval(()=>{
+    t--;
+    const pct=(secs-t)/secs*100;
+    pf.style.width=pct+'%';
+    const cdEl=document.getElementById('adCd');
+    if(cdEl) cdEl.textContent=t;
+    if(t<=0){
+      clearInterval(iv);
+      btn.disabled=false; btn.textContent='Continue ▶';
+    }
+  },1000);
+  btn.onclick=()=>{
+    if(btn.disabled) return;
+    ov.classList.remove('show'); adBusy=false;
+    btn.innerHTML=`Wait <span id="adCd">5</span>s...`; btn.disabled=true;
+    if(cb) cb();
+  };
+}
+// Timed interstitial every ~2.5 min during play
+setInterval(()=>{
+  if(G.state==='playing' && Date.now()-G.sessionStart>150000){
+    G.sessionStart=Date.now();
+    cancelAnimationFrame(G.animId);
+    showAd(5,()=>{ if(G.state==='playing') startRound(); });
+  }
+},20000);
 
-      $('cxFeedback').textContent = label + (pts > 0 ? ` +${pts}` : '');
-      $('cxFeedback').style.color = color;
-      $('cxScore').textContent = G.score;
+// ================================================================
+//  STATE MANAGER
+// ================================================================
+function setState(s){
+  G.state=s;
+  $('idleScreen').classList.toggle('on',s==='idle');
+  $('playScreen').classList.toggle('on',s==='playing');
+  $('resultScreen').classList.toggle('on',s==='result');
+  const arena=$('arena');
+  arena.style.opacity=s==='playing'?'1':'0';
+  arena.style.pointerEvents=s==='playing'?'all':'none';
+  $('startBtn').style.display=s==='idle'?'':'none';
+  $('tapBtn').style.display=s==='playing'?'':'none';
+  $('retryBtn').style.display=s==='result'?'':'none';
+  $('homeBtn').style.display=s==='result'?'':'none';
+}
+
+// ================================================================
+//  GAME LOOP
+// ================================================================
+let warnDone=false;
+function startRound(){
+  G.round++; G.ringSize=START_R; warnDone=false;
+  const spd=.62+Math.min(G.round*.14,2.9);
+  const ring=$('ringEl'),arena=$('arena');
+  const sc=(arena.offsetWidth||300)/280;
+  ring.style.borderColor='#ff6b00';
+  ring.style.boxShadow='0 0 22px rgba(255,107,0,.65),0 0 55px rgba(255,107,0,.18)';
+
+  let last=null;
+  function tick(ts){
+    if(G.state!=='playing') return;
+    if(!last) last=ts;
+    const dt=(ts-last)/16.67; last=ts;
+    G.ringSize-=spd*dt;
+
+    if(!warnDone && G.ringSize<=GOOD_R+10){ warnDone=true; sfx('warn'); }
+
+    if(G.ringSize<=PERFECT_R-10){
+      ring.style.borderColor='#ff3333';
+      ring.style.boxShadow='0 0 28px rgba(255,51,51,.85)';
+      sfx('miss'); flash('#ff0000',320);
+      G.streak=0; G.missCount++;
+      $('feedback').textContent='Too late! 😤';
+      $('feedback').style.color='#ff3333';
       updateStats();
-
-      if (G.missCount >= G.maxMiss) { setTimeout(() => showResult(), 400); return; }
-
-      // Update streak dots
-      const dots = $('cxStreak').querySelectorAll('.cx-streak-dot');
-      dots.forEach((d, i) => d.classList.toggle('active', i < (G.streak % 6)));
-
-      setTimeout(() => {
-        $('cxFeedback').textContent = '';
-        $('cxRing').style.borderColor = 'var(--accent)';
-        startRound();
-      }, 400);
+      if(G.missCount>=G.maxMiss){ setTimeout(showResult,500); return; }
+      setTimeout(()=>{
+        ring.style.borderColor='#ff6b00';
+        ring.style.boxShadow='0 0 22px rgba(255,107,0,.65)';
+        $('feedback').textContent=''; startRound();
+      },720); return;
     }
 
-    function updateStats() {
-      $('scoreDisplay').textContent = G.score;
-      $('streakDisplay').textContent = G.streak + '🔥';
-      const acc = G.total > 0 ? Math.round((G.hits / G.total) * 100) : 0;
-      $('accDisplay').textContent = acc + '%';
+    const d=G.ringSize*2*sc;
+    ring.style.width=d+'px'; ring.style.height=d+'px';
+
+    if(G.ringSize<=PERFECT_R){
+      ring.style.borderColor='#00ff88';
+      ring.style.boxShadow='0 0 28px rgba(0,255,136,.9),0 0 55px rgba(0,255,136,.25)';
+    } else if(G.ringSize<=GOOD_R){
+      ring.style.borderColor='#ffcc00';
+      ring.style.boxShadow='0 0 22px rgba(255,204,0,.7)';
     }
 
-    function showResult() {
-      G.state = 'result';
-      cancelAnimationFrame(G.animId);
-      const isNew = G.score > G.best;
-      if (isNew) G.best = G.score;
-      Storage.set('clutch', { best: G.best });
-      $('bestDisplay').textContent = G.best;
-      $('cxFinalScore').textContent = G.score;
-      $('cxFinalStreak').textContent = G.bestStreak;
-      const acc = G.total > 0 ? Math.round((G.hits / G.total) * 100) : 0;
-      $('cxFinalAcc').textContent = acc + '%';
+    G.animId=requestAnimationFrame(tick);
+  }
+  G.animId=requestAnimationFrame(tick);
+}
 
-      if (G.score >= 100) { $('cxResultEmoji').textContent = '🏆'; $('cxResultTitle').textContent = 'CLUTCH LEGEND!'; }
-      else if (G.score >= 50) { $('cxResultEmoji').textContent = '🔥'; $('cxResultTitle').textContent = 'CLUTCH MASTER!'; }
-      else if (G.score >= 20) { $('cxResultEmoji').textContent = '⚡'; $('cxResultTitle').textContent = 'CLUTCH PLAYER!'; }
-      else { $('cxResultEmoji').textContent = '💪'; $('cxResultTitle').textContent = 'KEEP TRAINING!'; }
+// ================================================================
+//  TAP ACTION
+// ================================================================
+function tap(){
+  if(G.state!=='playing') return;
+  cancelAnimationFrame(G.animId);
+  const r=G.ringSize; G.total++;
+  let pts=0,label='',color='',type='';
 
-      $('cxResultMsg').textContent = isNew ? '🎉 New personal best!' : `Best: ${G.best} points`;
-      const pct = Math.min(99, Math.floor((G.score / 100) * 95) + 5);
-      $('cxCompare').textContent = `Better than ${pct}% players 😏`;
-      $('cxProgress').style.width = Math.min(100, G.score) + '%';
+  if(r<=PERFECT_R){
+    pts=10;label='🔥 PERFECT!';color='#00ff88';type='perfect';G.streak++;G.hits++;flash('#00ff88',250);
+  } else if(r<=GOOD_R){
+    pts=6;label='⚡ GREAT!';color='#fbbf24';type='good';G.streak++;G.hits++;flash('#ffcc00',200);
+  } else if(r<=OK_R){
+    pts=3;label='👍 GOOD';color='#ff6b00';type='ok';G.streak++;G.hits++;flash('#ff6b00',160);
+  } else {
+    pts=0;label='Too early! 😅';color='rgba(255,255,255,.35)';type='miss';G.streak=0;G.missCount++;flash('#ff0000',300);
+  }
 
-      ['cxIdleCtrl','cxPlayCtrl'].forEach(id => $(id).classList.add('hidden'));
-      $('cxResultCtrl').classList.remove('hidden');
-      $('cxIdle').style.display = 'none';
-      $('cxPlaying').style.display = 'none';
-      $('cxResult').style.display = 'flex';
-    }
+  if(G.streak>1) pts=Math.round(pts*(1+Math.min(G.streak-1,4)*.32));
+  G.score+=pts;
+  if(G.streak>G.bestStreak) G.bestStreak=G.streak;
+  sfx(type);
 
-    function startGame() {
-      SFX.init();
-      G.state = 'playing';
-      G.score = 0; G.streak = 0; G.bestStreak = 0;
-      G.hits = 0; G.total = 0; G.missCount = 0; G.round = 0;
-      setZoneSizes();
-      $('cxScore').textContent = '0';
-      $('cxFeedback').textContent = '';
-      $('cxIdle').style.display = 'none';
-      $('cxPlaying').style.display = 'flex';
-      $('cxResult').style.display = 'none';
-      $('cxIdleCtrl').classList.add('hidden');
-      $('cxPlayCtrl').classList.remove('hidden');
-      $('cxResultCtrl').classList.add('hidden');
-      updateStats();
-      setTimeout(() => startRound(), 300);
-    }
+  // Hit flash ring
+  const hf=$('hitFlash');
+  hf.style.background=color; hf.style.animation='none'; hf.offsetHeight;
+  hf.style.animation='fOut .4s ease-out forwards';
 
-    $('cxBtnStart').addEventListener('click', startGame);
-    $('cxBtnTap').addEventListener('click', tapAction);
-    $('cxTargetWrap').addEventListener('click', tapAction);
-    $('cxBtnRetry').addEventListener('click', () => {
-      if (window.shouldShowAd && shouldShowAd() && window.showAd) { showAd(startGame); return; }
-      startGame();
-    });
-    $('cxBtnHome').addEventListener('click', () => window.location.href = '/');
-    document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); if (G.state === 'idle') startGame(); else if (G.state === 'playing') tapAction(); } });
+  // Score pop
+  const sc=$('cxScore');
+  sc.textContent=G.score;
+  sc.style.transform='scale(1.22)'; sc.style.color=color;
+  setTimeout(()=>{ sc.style.transform='scale(1)'; sc.style.color='#ff6b00'; },220);
 
-    const saved = Storage.get('clutch') || {};
-    G.best = saved.best || 0;
-    $('bestDisplay').textContent = G.best;
-  </script>
+  $('feedback').textContent=label+(pts>0?` +${pts}`:'');
+  $('feedback').style.color=color;
+
+  // Streak dots
+  const dots=$('cxStreak').querySelectorAll('.sd');
+  dots.forEach((d,i)=>{
+    const on=i<(G.streak%6);
+    d.style.background=on?'#ff6b00':'rgba(255,255,255,.08)';
+    d.style.boxShadow=on?'0 0 8px #ff6b00':'none';
+    d.style.transform=on?'scale(1.35)':'scale(1)';
+  });
+
+  updateStats();
+  if(G.missCount>=G.maxMiss){ setTimeout(showResult,500); return; }
+  setTimeout(()=>{ $('feedback').textContent=''; $('ringEl').style.borderColor='#ff6b00'; startRound(); },420);
+}
+
+function updateStats(){
+  $('scoreV').textContent=G.score;
+  $('streakV').textContent=G.streak+'🔥';
+  const acc=G.total>0?Math.round(G.hits/G.total*100):0;
+  $('accV').textContent=acc+'%';
+  $('pgFill').style.width=Math.min(100,G.score)+'%';
+}
+
+// ================================================================
+//  RESULT
+// ================================================================
+const RMSG={
+  s:['LEGEND MATERIAL! 💪','Bhai genius hai tu! 🔥','NOBODY CAN STOP YOU! ⚡'],
+  a:['Almost 1% Club! 🎯','Ek aur round — tu wahan pahunch jayega!','Keep this fire going! 🔥'],
+  b:['Accha tha! Aur try karo 💪','Next round mein 1% possible hai!','Dimaag aur laga! 🧠'],
+  c:['Shuru shuru mein aisa hota hai!','Give up mat — 1% wale yahan se hi shuru kiye!','Retry karo — asli game abhi shuru!'],
+};
+function showResult(){
+  G.state='result';
+  cancelAnimationFrame(G.animId);
+  stopWords(); stopMusic();
+
+  const isNew=G.score>G.best;
+  if(isNew) G.best=G.score;
+  S.set('clutch',{best:G.best});
+
+  // Percentile calc (motivating bias)
+  const pct=Math.min(97,Math.max(3,Math.floor(G.score/100*90)+10));
+  const top=100-pct;
+
+  $('rsScore').textContent=G.score;
+  $('rsScore').style.color=G.score>=100?'#fbbf24':G.score>=50?'#00ff88':'#ff6b00';
+  $('rsPctNum').textContent=pct;
+  $('rsFStr').textContent=G.bestStreak;
+  $('rsFAcc').textContent=(G.total>0?Math.round(G.hits/G.total*100):0)+'%';
+  $('rsFTop').textContent='Top '+top+'%';
+  $('rsFRnd').textContent=G.round;
+  $('bestVal').textContent=G.best;
+
+  if(isNew){$('rsEmoji').textContent='🏆';$('rsTitle').textContent='NEW BEST! 🎉';$('rsTitle').style.color='#fbbf24';flash('#fbbf24',500);}
+  else if(G.score>=100){$('rsEmoji').textContent='👑';$('rsTitle').textContent='1% CLUB!';$('rsTitle').style.color='#fbbf24';}
+  else if(G.score>=50){$('rsEmoji').textContent='🔥';$('rsTitle').textContent='CLUTCH MASTER!';$('rsTitle').style.color='#00ff88';}
+  else if(G.score>=20){$('rsEmoji').textContent='⚡';$('rsTitle').textContent='GREAT GAME!';$('rsTitle').style.color='#ff6b00';}
+  else{$('rsEmoji').textContent='💪';$('rsTitle').textContent='KEEP TRAINING!';$('rsTitle').style.color='rgba(255,255,255,.6)';}
+
+  const pool=G.score>=80?RMSG.s:G.score>=40?RMSG.a:G.score>=15?RMSG.b:RMSG.c;
+  $('rsMsg').textContent=pool[Math.floor(Math.random()*pool.length)];
+
+  setState('result');
+  $('resultScreen').style.animation='none'; $('resultScreen').offsetHeight;
+  $('resultScreen').style.animation='rsIn .45s ease-out forwards';
+  showWord('GAME OVER','#ff3333');
+}
+
+// ================================================================
+//  START GAME
+// ================================================================
+function startGame(){
+  audio(); // unlock
+  G.score=0;G.streak=0;G.bestStreak=0;
+  G.hits=0;G.total=0;G.missCount=0;G.round=0;
+  G.sessionStart=Date.now();
+  $('cxScore').textContent='0';
+  $('feedback').textContent='';
+  setZones(); updateStats(); setState('playing');
+  startMusic(); startWords();
+  setTimeout(startRound,400);
+}
+
+// ================================================================
+//  EVENTS — TAP ANYWHERE
+// ================================================================
+document.addEventListener('touchstart',e=>{
+  const tgt=e.target;
+  if(tgt.id==='adCloseBtn'||tgt.id==='backBtn'||tgt.id==='homeBtn') return;
+  e.preventDefault();
+  if(G.state==='idle') startGame();
+  else if(G.state==='playing') tap();
+},{passive:false});
+
+document.addEventListener('click',e=>{
+  const id=e.target.id;
+  if(['adCloseBtn','backBtn','homeBtn','startBtn','tapBtn','retryBtn'].includes(id)) return;
+  if(G.state==='idle') startGame();
+  else if(G.state==='playing') tap();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){
+    e.preventDefault();
+    if(G.state==='idle') startGame();
+    else if(G.state==='playing') tap();
+  }
+});
+
+$('startBtn').addEventListener('click',e=>{e.stopPropagation();startGame();});
+$('tapBtn').addEventListener('click',e=>{e.stopPropagation();tap();});
+$('retryBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  showAd(30,()=>startGame()); // 30-sec ad on retry
+});
+$('homeBtn').addEventListener('click',e=>{e.stopPropagation();window.location.href='/';});
+$('backBtn').addEventListener('click',e=>e.stopPropagation());
+
+// ================================================================
+//  INIT
+// ================================================================
+const saved=S.get('clutch')||{};
+G.best=saved.best||0;
+$('bestVal').textContent=G.best;
+resize();
+setState('idle');
+</script>
 </body>
 </html>

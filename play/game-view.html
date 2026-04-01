@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Playing Game - Meri Kamai</title>
+  <style>
+    body, html { 
+      margin: 0; padding: 0; height: 100%; 
+      background: #05050a; overflow: hidden; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    }
+    
+    /* Top Navigation Bar */
+    .game-header { 
+      position: absolute; top: 0; width: 100%; height: 50px; 
+      background: rgba(5, 5, 10, 0.95); border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex; justify-content: space-between; align-items: center; 
+      padding: 0 15px; box-sizing: border-box; z-index: 100;
+    }
+    
+    .back-btn { 
+      color: #000; text-decoration: none; font-weight: 700; 
+      background: #ff6b00; padding: 6px 16px; border-radius: 20px; 
+      font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+    }
+    
+    .tracker-badge { 
+      color: #00ff88; font-size: 12px; font-weight: 700; 
+      background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3);
+      padding: 4px 12px; border-radius: 12px;
+    }
+    
+    /* Fullscreen Game Container */
+    .iframe-container { 
+      position: absolute; top: 50px; bottom: 0; width: 100%; 
+      background: #0a0a14;
+    }
+    
+    iframe { 
+      width: 100%; height: 100%; border: none; 
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-header">
+    <a href="#" id="backBtn" class="back-btn">◀ Back to Portal</a>
+    
+    <div class="tracker-badge" id="trackerDisplay">Ads Tracked: 0</div>
+  </div>
+
+  <div class="iframe-container" id="gameContainer">
+    <h3 style="color:#9090b0; text-align:center; margin-top:80px; font-family:sans-serif;">
+      Loading Game Engine...
+    </h3>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. URL ROUTING & IDs FETCHING
+    // ==========================================
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Agar koi game ID nahi mili, toh GD ka ek default game load hoga (testing ke liye)
+    const gameId = urlParams.get('id') || 'bdf6aa1bc79a40879e262145e5ea558e'; 
+    const username = urlParams.get('u') || 'default';
+
+    // Back button ko wapas usi user ke portal par bhejna
+    document.getElementById('backBtn').href = '/' + (username !== 'default' ? username : '');
+
+    // ==========================================
+    // 2. THE "BRING YOUR OWN KEY" (BYOK) LOGIC
+    // ==========================================
+    // Dummy DB (Supabase Connect hone tak)
+    const PUBLISHER_DB = {
+        "rahul": "RAHUL_GD_PUBLISHER_ID_123", // Pro User apni ID lagayega
+        "amit": "AMIT_GD_PUBLISHER_ID_456",
+        "default": "MERIKAMAI_MAIN_ID_999"    // Free Users ke liye tumhari ID
+    };
+    
+    // Agar username DB mein nahi hai, toh automatically tumhari (default) ID lag jayegi
+    const pubId = PUBLISHER_DB[username] || PUBLISHER_DB["default"];
+
+    // ==========================================
+    // 3. RENDER GAMEDISTRIBUTION IFRAME
+    // ==========================================
+    document.getElementById('gameContainer').innerHTML = `
+        <iframe 
+            src="https://html5.gamedistribution.com/${gameId}/?gd_sdk_id=${pubId}" 
+            scrolling="none" 
+            allowfullscreen>
+        </iframe>
+    `;
+
+    // ==========================================
+    // 4. THE AD TRACKING ALGORITHM (Session Logic)
+    // ==========================================
+    let adCount = 0;
+
+    // Yeh function dashboard ke numbers badhayega
+    function recordAdView(type) {
+        adCount++;
+        document.getElementById('trackerDisplay').textContent = `Ads Tracked: ${adCount} (${type})`;
+        
+        // 🚀 FUTURE SUPABASE CODE GOES HERE:
+        // supabase.rpc('increment_ad_views', { portal_username: username });
+        
+        console.log(`[Supabase Ping Backend] -> +1 Ad View recorded for user: ${username} | Trigger: ${type}`);
+    }
+
+    // Action A: Pre-Roll Ad (Game open hote hi GD ek ad dikhata hai)
+    // Hum ise 4 second baad trigger karenge taaki load time track na ho
+    setTimeout(() => {
+        recordAdView('Pre-Roll');
+    }, 4000); 
+
+    // Action B: Mid-Roll Ads (GameDistribution ka rule hai har ~3.5 minute mein ek ad)
+    // Hum timer lagayenge jo background mein count karta rahega
+    const midRollInterval = 3.5 * 60 * 1000; // 3.5 minutes in milliseconds
+    
+    const sessionTimer = setInterval(() => {
+        recordAdView('Mid-Roll');
+    }, midRollInterval);
+
+    // Agar user back chala gaya ya tab band kar diya, toh timer rok do
+    window.onbeforeunload = () => {
+        clearInterval(sessionTimer);
+    };
+
+  </script>
+</body>
+</html>

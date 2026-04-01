@@ -1,366 +1,175 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <meta name="theme-color" content="#0a0a0f"/>
-  <meta name="description" content="Meri Kamai - Dimaag ki training, games ke zariye"/>
-  <link rel="manifest" href="/manifest.json"/>
-  <link rel="apple-touch-icon" href="/assets/images/icon-192.png"/>
-  <title>Meri Kamai – Dimaag Ki Training</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Teko:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="/assets/css/home.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meri Kamai - Start Your Own Gaming Portal & Earn Money</title>
+  <meta name="description" content="Create your own fully automated gaming website in 2 minutes. No coding required. Start earning ad revenue today!">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Teko:wght@600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== RESET & ROOT ===== */
+    :root {
+      --bg: #05050a; --bg-alt: #0a0a14; --card: #141428;
+      --accent: #ff6b00; --accent2: #ff9500; --cyan: #00d4ff; --success: #00ff88;
+      --text: #f0f0ff; --text2: #9090b0; --border: rgba(255,255,255,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    /* ===== NAVBAR ===== */
+    .navbar {
+      position: fixed; top: 0; width: 100%; padding: 15px 5%;
+      background: rgba(5,5,10,0.9); backdrop-filter: blur(10px);
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border); z-index: 1000;
+    }
+    .logo { font-family: 'Orbitron', sans-serif; font-size: 24px; font-weight: 900; letter-spacing: 1px; color: var(--text); text-decoration: none;}
+    .logo span { color: var(--accent); }
+    .nav-links a { color: var(--text2); text-decoration: none; margin: 0 15px; font-weight: 600; transition: 0.3s; }
+    .nav-links a:hover { color: var(--accent); }
+    .btn-login { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px 20px; border-radius: 20px; font-weight: 700; text-decoration: none; transition: 0.3s; margin-right: 10px;}
+    .btn-login:hover { background: rgba(255,107,0,0.1); }
+    .btn-signup { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; padding: 8px 20px; border-radius: 20px; font-weight: 700; text-decoration: none; transition: 0.3s; }
+    .btn-signup:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,107,0,0.4); }
+
+    /* ===== HERO SECTION ===== */
+    .hero {
+      padding: 150px 5% 100px; text-align: center; position: relative;
+      background: radial-gradient(circle at center, rgba(255,107,0,0.1) 0%, transparent 60%);
+    }
+    .hero-badge { display: inline-block; background: rgba(0,212,255,0.1); border: 1px solid var(--cyan); color: var(--cyan); padding: 5px 15px; border-radius: 20px; font-size: 13px; font-weight: 700; letter-spacing: 2px; margin-bottom: 20px; }
+    .hero-title { font-family: 'Teko', sans-serif; font-size: clamp(40px, 6vw, 70px); line-height: 1.1; margin-bottom: 20px; }
+    .hero-title span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-desc { font-size: 18px; color: var(--text2); max-width: 600px; margin: 0 auto 40px; line-height: 1.6; }
+    .hero-cta { display: flex; justify-content: center; gap: 20px; }
+    .btn-main { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; padding: 15px 40px; border-radius: 30px; font-size: 20px; font-weight: 700; text-decoration: none; font-family: 'Teko', sans-serif; letter-spacing: 1px; transition: 0.3s; box-shadow: 0 10px 30px rgba(255,107,0,0.3); }
+    .btn-main:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(255,107,0,0.5); }
+
+    /* ===== FEATURES (HOW IT WORKS) ===== */
+    .features { padding: 80px 5%; background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .sec-title { text-align: center; font-family: 'Teko', sans-serif; font-size: 45px; margin-bottom: 50px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto; }
+    .feat-card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 20px; text-align: center; transition: 0.3s; }
+    .feat-card:hover { transform: translateY(-10px); border-color: var(--accent); box-shadow: 0 10px 30px rgba(255,107,0,0.1); }
+    .feat-icon { font-size: 50px; margin-bottom: 20px; }
+    .feat-card h3 { font-size: 22px; margin-bottom: 15px; color: var(--text); }
+    .feat-card p { color: var(--text2); font-size: 15px; line-height: 1.6; }
+
+    /* ===== PRICING ===== */
+    .pricing { padding: 100px 5%; max-width: 1000px; margin: 0 auto; }
+    .price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 50px; }
+    
+    .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 40px; position: relative; overflow: hidden; }
+    .price-card.pro { border-color: var(--accent); box-shadow: 0 0 40px rgba(255,107,0,0.15); }
+    .pro-badge { position: absolute; top: 20px; right: 20px; background: rgba(255,107,0,0.1); color: var(--accent); padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 12px; letter-spacing: 1px; border: 1px solid var(--accent); }
+    
+    .p-name { font-size: 20px; font-weight: 700; color: var(--text2); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+    .p-price { font-family: 'Teko', sans-serif; font-size: 60px; line-height: 1; margin-bottom: 25px; }
+    .p-price span { font-size: 20px; color: var(--text2); font-family: 'Rajdhani', sans-serif; }
+    
+    .p-list { list-style: none; margin-bottom: 35px; }
+    .p-list li { margin-bottom: 15px; color: var(--text2); display: flex; align-items: center; gap: 10px; font-size: 16px; }
+    .p-list li::before { content: '✅'; font-size: 14px; }
+    
+    .btn-plan { display: block; text-align: center; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 12px; font-weight: 700; text-decoration: none; transition: 0.3s; }
+    .btn-plan:hover { background: rgba(255,255,255,0.1); }
+    .price-card.pro .btn-plan { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #000; border: none; }
+    .price-card.pro .btn-plan:hover { box-shadow: 0 10px 20px rgba(255,107,0,0.3); transform: translateY(-2px); }
+
+    /* ===== FOOTER ===== */
+    .footer { padding: 40px 5%; background: var(--bg-alt); border-top: 1px solid var(--border); text-align: center; }
+    .footer p { color: var(--text2); font-size: 14px; }
+  </style>
 </head>
 <body>
-  <!-- Particle canvas -->
-  <canvas id="bgCanvas"></canvas>
 
-  <!-- Header -->
-  <header class="header" id="header">
-    <div class="header-inner">
-      <div class="logo">
-        <span class="logo-icon">🧠</span>
-        <span class="logo-text">MERI<span class="logo-accent">KAMAI</span></span>
-      </div>
-      <nav class="nav-links">
-        <a href="#games">Games</a>
-        <a href="#why">Why</a>
-        <a href="pages/about">About</a>
-      </nav>
-      <div class="header-actions">
-        <a href="#download" class="btn-app-small">📱 App</a>
+  <nav class="navbar">
+    <a href="/" class="logo">MERI<span>KAMAI</span></a>
+    <div class="nav-links" style="display: flex; align-items: center;">
+      <a href="#how-it-works">How it Works</a>
+      <a href="#pricing">Pricing</a>
+      <div style="margin-left: 20px;">
+        <a href="/dashboard/index.html" class="btn-login">Login</a>
+        <a href="/dashboard/index.html" class="btn-signup">Get Started</a>
       </div>
     </div>
-  </header>
+  </nav>
 
-  <!-- HERO -->
-  <section class="hero" id="hero">
-    <div class="hero-glow glow-1"></div>
-    <div class="hero-glow glow-2"></div>
-    <div class="hero-content">
-      <div class="hero-badge animate-in">🔥 INDIA KA #1 MIND TRAINING PLATFORM</div>
-      <h1 class="hero-title animate-in delay-1">
-        <span class="title-line">PLAY KARO.</span>
-        <span class="title-line accent-line">UPGRADE KARO.</span>
-        <span class="title-sub">Sirf timepass nahi — asli transformation</span>
-      </h1>
-      <p class="hero-desc animate-in delay-2">
-        Log paise ke peeche bhagte hain… par asli kamai wo hoti hai<br/>
-        jo aapko <strong>better</strong> banaye. Yahan har game aapke<br/>
-        <span class="highlight">dimaag ko train</span> karta hai.
-      </p>
-      <div class="hero-skills animate-in delay-3">
-        <div class="skill-chip">🧠 Better Decisions</div>
-        <div class="skill-chip">⚡ Sharper Focus</div>
-        <div class="skill-chip">💪 Strong Confidence</div>
-        <div class="skill-chip">🎯 Real Control</div>
-      </div>
-      <div class="hero-cta animate-in delay-4">
-        <a href="#games" class="btn-primary pulse-btn">
-          <span>Start Training</span>
-          <span class="btn-icon">🔥</span>
-        </a>
-        <a href="#download" class="btn-secondary">
-          <span>📱 Android App Download</span>
-        </a>
-      </div>
-      <div class="hero-stats animate-in delay-5">
-        <div class="stat"><span class="stat-num" id="live-players">400+</span><span class="stat-label">Live Players</span></div>
-        <div class="stat-divider"></div>
-        <div class="stat"><span class="stat-num">5</span><span class="stat-label">Mind Games</span></div>
-        <div class="stat-divider"></div>
-        <div class="stat"><span class="stat-num">1%</span><span class="stat-label">Club Members</span></div>
-      </div>
+  <section class="hero">
+    <div class="hero-badge">🚀 B2B SAAS PLATFORM</div>
+    <h1 class="hero-title">Start Your Own Gaming Portal <br><span>& Earn Ad Revenue</span></h1>
+    <p class="hero-desc">Launch a fully automated HTML5 gaming website in 2 minutes. No coding, no servers, no headaches. Just select games, connect your ads, and start earning.</p>
+    <div class="hero-cta">
+      <a href="/dashboard/index.html" class="btn-main">Create Your Portal Free</a>
     </div>
-    <div class="hero-visual">
-      <div class="phone-mockup">
-        <div class="phone-screen">
-          <div class="phone-game-preview">
-            <div class="preview-bar" id="previewBar"></div>
-            <div class="preview-mult" id="previewMult">1.0x</div>
-            <div class="preview-label">SkyRise 🚀</div>
-          </div>
-        </div>
+  </section>
+
+  <section class="features" id="how-it-works">
+    <h2 class="sec-title">How It Works?</h2>
+    <div class="grid-3">
+      <div class="feat-card">
+        <div class="feat-icon">🛠️</div>
+        <h3>1. Claim Your Portal</h3>
+        <p>Sign up and instantly get your own gaming website (e.g. games.merikamai.in/yourname). No hosting required.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🎮</div>
+        <h3>2. Choose Your Games</h3>
+        <p>Use our dashboard to select from 200+ top HTML5 games. Add or remove games with a single click.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💰</div>
+        <h3>3. Share & Earn</h3>
+        <p>Upgrade to PRO to paste your own GameDistribution ID. Share your link and keep 100% of the ad revenue generated.</p>
       </div>
     </div>
   </section>
 
-  <!-- YOUTUBE VIDEO -->
-  <section class="video-section" id="video">
-    <div class="section-label">📹 DEKHO SAMJHO</div>
-    <h2 class="section-title">Ye Games Kya Hain Aur Kyun?</h2>
-    <p class="section-sub">2 minute me samjho — phir khelo</p>
-    <div class="video-wrapper">
-      <div class="video-frame">
-        <!-- Replace YOUR_VIDEO_ID with actual YouTube video ID -->
-        <iframe
-          src="https://www.youtube.com/embed/YOUR_VIDEO_ID?rel=0&modestbranding=1"
-          title="Meri Kamai - Games Explained"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen>
-        </iframe>
+  <section class="pricing" id="pricing">
+    <h2 class="sec-title">Simple, Transparent Pricing</h2>
+    
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="p-name">Starter</div>
+        <div class="p-price">₹0<span> / forever</span></div>
+        <ul class="p-list">
+          <li>Free Subdomain (games.merikamai.in/name)</li>
+          <li>Access to 200+ Games</li>
+          <li>Basic Dashboard Analytics</li>
+          <li><span style="color:#ff4444; margin-right:5px;">❌</span> MeriKamai Ads Displayed</li>
+          <li><span style="color:#ff4444; margin-right:5px;">❌</span> No Ad Revenue for you</li>
+        </ul>
+        <a href="/dashboard/index.html" class="btn-plan">Start for Free</a>
       </div>
-      <div class="video-cta">
-        <a href="https://youtube.com/@merikamai" target="_blank" class="btn-youtube">
-          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-          YouTube Channel Follow Karo
-        </a>
-        <a href="https://instagram.com/merikamai" target="_blank" class="btn-instagram">
-          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-          Instagram Follow Karo
-        </a>
+
+      <div class="price-card pro">
+        <div class="pro-badge">RECOMMENDED</div>
+        <div class="p-name" style="color: var(--accent);">Pro Creator</div>
+        <div class="p-price">₹399<span> / month</span></div>
+        <ul class="p-list">
+          <li><strong>Everything in Starter, plus:</strong></li>
+          <li>Connect Custom Domain (.com/.in)</li>
+          <li><strong>Bring Your Own Key (BYOK)</strong></li>
+          <li>Paste your GameDistribution ID</li>
+          <li><strong>Keep 100% Ad Revenue</strong></li>
+          <li>Remove MeriKamai Branding</li>
+        </ul>
+        <a href="/dashboard/index.html" class="btn-plan">Upgrade to PRO</a>
       </div>
     </div>
   </section>
 
-  <!-- GAMES -->
-  <section class="games-section" id="games">
-    <div class="section-label">🎮 CHOOSE YOUR BATTLE</div>
-    <h2 class="section-title">5 Games. 5 Real Skills.</h2>
-    <p class="section-sub">Har game aapko ek asli skill deta hai</p>
-
-    <div class="games-grid">
-
-      <div class="game-card featured" data-game="skyrise">
-        <div class="card-glow"></div>
-        <div class="card-badge">🔥 MOST POPULAR</div>
-        <div class="card-icon">🚀</div>
-        <div class="card-content">
-          <h3 class="card-title">SkyRise</h3>
-          <p class="card-tagline">Sahi time pe decision lo</p>
-          <div class="card-skill">
-            <span class="skill-icon">🧠</span>
-            <span>Decision Making</span>
-          </div>
-          <p class="card-desc">Rocket upar ja raha hai… risk lena hai ya rukna hai — ye aapka decision hai.</p>
-          <div class="card-stats">
-            <span>⭐ 4.9</span>
-            <span>👥 <span class="live-count">412</span> playing</span>
-          </div>
-          <a href="/games/skyrise/" class="btn-play">Play Now ▶</a>
-        </div>
-      </div>
-
-      <div class="game-card" data-game="one-percent">
-        <div class="card-glow"></div>
-        <div class="card-badge elite">👑 ELITE</div>
-        <div class="card-icon">⚡</div>
-        <div class="card-content">
-          <h3 class="card-title">One Percent</h3>
-          <p class="card-tagline">Kya tum 1% me ho?</p>
-          <div class="card-skill">
-            <span class="skill-icon">🎯</span>
-            <span>Focus + Patience</span>
-          </div>
-          <p class="card-desc">99% log fail hote hain. Sirf wahi jeetta hai jo give up nahi karta.</p>
-          <div class="card-stats">
-            <span>⭐ 4.8</span>
-            <span>👥 <span class="live-count">287</span> playing</span>
-          </div>
-          <a href="/games/one-percent/" class="btn-play">Try Now ▶</a>
-        </div>
-      </div>
-
-      <div class="game-card" data-game="survivor-x">
-        <div class="card-glow"></div>
-        <div class="card-icon">🛡</div>
-        <div class="card-content">
-          <h3 class="card-title">Survivor X</h3>
-          <p class="card-tagline">Kitni der tik paoge?</p>
-          <div class="card-skill">
-            <span class="skill-icon">💪</span>
-            <span>Stress Control</span>
-          </div>
-          <p class="card-desc">Obstacles aate rahenge. Tumhe bas survive karna hai. Hero wahi hai jo tikta hai.</p>
-          <div class="card-stats">
-            <span>⭐ 4.7</span>
-            <span>👥 <span class="live-count">198</span> playing</span>
-          </div>
-          <a href="/games/survivor-x/" class="btn-play">Survive Now ▶</a>
-        </div>
-      </div>
-
-      <div class="game-card" data-game="clutch-x">
-        <div class="card-glow"></div>
-        <div class="card-icon">⚡</div>
-        <div class="card-content">
-          <h3 class="card-title">Clutch X</h3>
-          <p class="card-tagline">Last second pe jeet</p>
-          <div class="card-skill">
-            <span class="skill-icon">🔥</span>
-            <span>Confidence</span>
-          </div>
-          <p class="card-desc">Ek second late… aur sab khatam. Ye hai real clutch moment.</p>
-          <div class="card-stats">
-            <span>⭐ 4.9</span>
-            <span>👥 <span class="live-count">334</span> playing</span>
-          </div>
-          <a href="/games/clutch-x/" class="btn-play">Play Clutch ▶</a>
-        </div>
-      </div>
-
-      <div class="game-card" data-game="legend-run">
-        <div class="card-glow"></div>
-        <div class="card-badge legend">🏆 LEGEND</div>
-        <div class="card-icon">🏆</div>
-        <div class="card-content">
-          <h3 class="card-title">Legend Run</h3>
-          <p class="card-tagline">Legend bano ya quit karo</p>
-          <div class="card-skill">
-            <span class="skill-icon">⚡</span>
-            <span>Discipline</span>
-          </div>
-          <p class="card-desc">Easy nahi hai. Sirf strong log hi aage badhte hain. Har run aapko better banata hai.</p>
-          <div class="card-stats">
-            <span>⭐ 4.8</span>
-            <span>👥 <span class="live-count">156</span> playing</span>
-          </div>
-          <a href="/games/legend-run/" class="btn-play">Start Run ▶</a>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- WHY SECTION -->
-  <section class="why-section" id="why">
-    <div class="section-label">💡 THE DIFFERENCE</div>
-    <h2 class="section-title">Sirf Games Nahi — Transformation</h2>
-    <p class="section-sub">Aaj ke time me log games khelte hain par unse kuch seekhte nahi</p>
-    <div class="why-grid">
-      <div class="why-card">
-        <div class="why-icon">🧠</div>
-        <h3>Focus Improve</h3>
-        <p>Har game aapki concentration badhata hai</p>
-      </div>
-      <div class="why-card">
-        <div class="why-icon">⚡</div>
-        <h3>Better Decisions</h3>
-        <p>Pressure me sahi choice karna seekho</p>
-      </div>
-      <div class="why-card">
-        <div class="why-icon">💪</div>
-        <h3>Mentally Strong</h3>
-        <p>Stress handle karna — real life me kaam aayega</p>
-      </div>
-      <div class="why-card">
-        <div class="why-icon">🚀</div>
-        <h3>Daily Growth</h3>
-        <p>Sirf 10 min roz — aur aap khud change feel karoge</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- LEADERBOARD -->
-  <section class="leaderboard-section" id="leaderboard">
-    <div class="section-label">🏆 LIVE LEADERBOARD</div>
-    <h2 class="section-title">Top Players Today</h2>
-    <div class="leaderboard-wrap">
-      <div class="lb-header">
-        <span>Rank</span><span>Player</span><span>Score</span><span>Title</span>
-      </div>
-      <div class="lb-list" id="lbList"></div>
-    </div>
-  </section>
-
-  <!-- APP DOWNLOAD -->
-  <section class="download-section" id="download">
-    <div class="download-glow"></div>
-    <div class="download-content">
-      <div class="download-text">
-        <div class="section-label">📱 MOBILE APP</div>
-        <h2 class="section-title">Android App Download Karo</h2>
-        <p>Kabhi bhi, kahin bhi — apna dimaag train karo.<br/>Offline bhi kaam karta hai!</p>
-        <div class="download-features">
-          <div class="feat">✅ Offline Support</div>
-          <div class="feat">✅ Push Notifications</div>
-          <div class="feat">✅ Daily Challenges</div>
-          <div class="feat">✅ Score Sync</div>
-        </div>
-        <a href="#" class="btn-download" id="installBtn" onclick="handleInstall(event)">
-          <svg viewBox="0 0 24 24" width="24"><path fill="currentColor" d="M17.523 15.341l-.005.007-4.96 2.862a1 1 0 0 1-1.001 0l-4.96-2.862-.005-.007A5 5 0 0 1 4 11V5a1 1 0 0 1 .553-.894l7-3.5a1 1 0 0 1 .894 0l7 3.5A1 1 0 0 1 20 5v6a5 5 0 0 1-2.477 4.341z"/></svg>
-          📥 Download Android App (APK)
-        </a>
-        <p class="install-note">Ya browser me open karo aur "Add to Home Screen" karo</p>
-      </div>
-      <div class="download-phone">
-        <div class="phone-mockup-2">
-          <div class="phone-notch"></div>
-          <div class="phone-screen-2">
-            <div class="app-preview-grid">
-              <div class="ap-game">🚀</div>
-              <div class="ap-game">⚡</div>
-              <div class="ap-game">🛡</div>
-              <div class="ap-game">🏆</div>
-            </div>
-            <div class="ap-label">MERI KAMAI</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="cta-section">
-    <div class="cta-glow"></div>
-    <h2 class="cta-title">Abhi Start Karo 🚀</h2>
-    <p class="cta-sub">Sirf 10 minute roz — aur aap apne aap me change feel karoge</p>
-    <p class="cta-sub2">Strong mind = Strong life</p>
-    <a href="#games" class="btn-primary pulse-btn big-btn">
-      <span>Start Now</span><span class="btn-icon">🔥</span>
-    </a>
-    <div class="social-links">
-      <a href="https://youtube.com/@merikamai" target="_blank" class="social-link yt">
-        <svg viewBox="0 0 24 24" width="18"><path fill="currentColor" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-        YouTube
-      </a>
-      <a href="https://instagram.com/merikamai" target="_blank" class="social-link ig">
-        <svg viewBox="0 0 24 24" width="18"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-        Instagram
-      </a>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
   <footer class="footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <span class="logo-text">MERI<span class="logo-accent">KAMAI</span></span>
-        <p>"Ye sirf games nahi, aapke dimaag ki training hai"</p>
-      </div>
-      <div class="footer-links">
-        <a href="/pages/about">About Us</a>
-        <a href="/pages/privacy">Privacy Policy</a>
-        <a href="/pages/terms">Terms & Conditions</a>
-        <a href="/pages/disclaimer">Disclaimer</a>
-        <a href="/pages/contact">Contact Us</a>
-      </div>
+    <div style="margin-bottom: 20px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+      <a href="/pages/about.html" style="color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;" onmouseover="this.style.color='#ff6b00'" onmouseout="this.style.color='var(--text2)'">About Us</a>
+      <a href="/pages/privacy.html" style="color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;" onmouseover="this.style.color='#ff6b00'" onmouseout="this.style.color='var(--text2)'">Privacy Policy</a>
+      <a href="/pages/terms.html" style="color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;" onmouseover="this.style.color='#ff6b00'" onmouseout="this.style.color='var(--text2)'">Terms & Conditions</a>
+      <a href="/pages/disclaimer.html" style="color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;" onmouseover="this.style.color='#ff6b00'" onmouseout="this.style.color='var(--text2)'">Disclaimer</a>
+      <a href="/pages/contact.html" style="color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.3s;" onmouseover="this.style.color='#ff6b00'" onmouseout="this.style.color='var(--text2)'">Contact</a>
     </div>
-    <div class="footer-note">
-      ⚠️ Note: Ye platform sirf skill-based games provide karta hai. Yahan koi real money gambling ya betting nahi hoti.
-    </div>
-    <div class="footer-copy">© 2026 Meri Kamai. All rights reserved. | support@merikamai.in</div>
+    <p>© 2026 MeriKamai.in | B2B SaaS Platform for Gamers. All rights reserved.</p>
   </footer>
 
-  <!-- AD MODAL -->
-  <div class="ad-overlay" id="adOverlay">
-    <div class="ad-box">
-      <div class="ad-label">AD</div>
-      <div class="ad-content">
-        <!-- Google AdSense / AdMob ad goes here -->
-        <div class="ad-placeholder">
-          <p>Advertisement</p>
-          <p style="font-size:12px;opacity:0.5">Google AdSense</p>
-        </div>
-      </div>
-      <button class="ad-close" id="adClose">Skip Ad ▶</button>
-    </div>
-  </div>
-
-  <script src="/assets/js/home.js"></script>
-  <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js").catch(()=>{})}</script>
-  <script src="/common/storage.js"></script>
 </body>
 </html>
